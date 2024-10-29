@@ -9,29 +9,7 @@
 namespace pax
 {
     template <class Type>
-    struct Slice {
-        //
-        //
-        // Variables.
-        //
-        //
-
-        Type* addr;
-        isize size;
-        isize limit;
-
-        //
-        //
-        // Operations.
-        //
-        //
-
-        const Type&
-        operator[](isize index) const;
-
-        Type&
-        operator[](isize index);
-    };
+    struct Slice;
 
     template <class Type, isize Size>
     Slice<Type>
@@ -93,6 +71,30 @@ namespace pax
     void
     slice_take(Slice<Type>* slice, isize index, isize count);
 */
+    template <class Type>
+    struct Slice {
+        //
+        //
+        // Variables.
+        //
+        //
+
+        Type* addr;
+        isize size;
+        isize limit;
+
+        //
+        //
+        // Operations.
+        //
+        //
+
+        const Type&
+        operator[](isize index) const;
+
+        Type&
+        operator[](isize index);
+    };
 
     //
     //
