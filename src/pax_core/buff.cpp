@@ -261,7 +261,7 @@ namespace pax
         isize avail = self.tail - self.curr;
         isize count = 0;
 
-        usize temp = value;
+        u64   temp = value;
         isize indx = 0;
 
         do {
@@ -301,7 +301,7 @@ namespace pax
         isize avail = self.tail - self.curr;
         isize count = 0;
 
-        usize temp = value;
+        u64   temp = value;
         isize indx = 0;
         byte  sign = '+';
 
@@ -513,7 +513,7 @@ namespace pax
         isize avail = self.tail - self.curr;
         isize count = 0;
 
-        usize temp = value;
+        u64   temp = value;
         isize indx = 0;
 
         do {
@@ -553,7 +553,7 @@ namespace pax
         isize avail = self.tail - self.curr;
         isize count = 0;
 
-        usize temp = value;
+        u64   temp = value;
         isize indx = 0;
         byte  sign = '+';
 

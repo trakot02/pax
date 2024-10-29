@@ -80,7 +80,7 @@ namespace pax
     pax::report_success({text, __func__, __FILE__, __LINE__})
 
 #define pax_debug(text) \
-    pax::report_debug({text, __func__ __FILE__, __LINE__})
+    pax::report_debug({text, __func__, __FILE__, __LINE__})
 
 #define pax_trace() \
     pax::report_trace({"", __func__, __FILE__, __LINE__})

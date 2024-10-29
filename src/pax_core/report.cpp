@@ -52,8 +52,6 @@ namespace pax
             (int) func.size, func.addr,
             (int) file.size, file.addr, line,
             (int) text.size, text.addr);
-
-        raise(SIGTERM);
     }
 
     void
