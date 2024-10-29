@@ -1,0 +1,12 @@
+out/
+.*
+
+Makefile
+*make
+
+*vcxproj*
+*sln
+
+compile_commands.json
+
+!.gitignore
