@@ -2,8 +2,7 @@
 #define PAX_CORE_ARENA_HPP
 
 #include <pax_core/types.hpp>
-#include <pax_core/str8.hpp>
-#include <pax_core/arr.hpp>
+#include <pax_core/array.hpp>
 
 // todo (trakot02):
 //
@@ -14,10 +13,6 @@
 
 namespace pax
 {
-    struct Arena_Res;
-    struct Arena_Buff;
-    struct Arena;
-
     enum Arena_Err : isize {
         arena_err_none            = 0,
         arena_err_request_too_big = 1,
@@ -46,7 +41,7 @@ namespace pax
         Arena_Buff* list;
     };
 
-    extern const Arr<str8, arena_err_count> ARENA_ERR_TITLE;
+    extern const Array<s8, arena_err_count> ARENA_ERR_TITLE;
 
     byte*
     align_forw(byte* addr, isize align);
@@ -55,10 +50,10 @@ namespace pax
     arena_buff_from(byte* addr, isize size);
 
     byte*
-    arena_buff_request(Arena_Buff* buff, isize width, isize align, isize count);
+    arena_buff_request(Arena_Buff* buffer, isize width, isize align, isize count);
 
     void
-    arena_buff_release(Arena_Buff* buff);
+    arena_buff_release(Arena_Buff* buffer);
 
     Arena
     arena_init(isize size);

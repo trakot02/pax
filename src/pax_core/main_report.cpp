@@ -7,12 +7,11 @@ main(int argc, char* argv[])
 {
     REPORT_LEVEL = report_level_trace;
 
-    str8 prova = "Prova";
+    auto text  = s8 {"Prova"};
+    auto array = Array<byte, 2> {};
 
-    Arr<byte, 2> array = {};
+    for ( isize i = 0; i < text.size; i += 1 )
+        array[i] = text[i];
 
-    for ( isize i = 0; i < prova.size; i += 1 )
-        array[i] = prova[i];
-
-    REPORT_LEVEL = report_level_message;
+    REPORT_LEVEL = REPORT_LEVEL_BASE;
 }

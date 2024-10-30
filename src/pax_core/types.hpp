@@ -1,7 +1,7 @@
 #ifndef PAX_CORE_TYPES_HPP
 #define PAX_CORE_TYPES_HPP
 
-#include <cstdint>
+#include <stdint.h>
 
 #define pax_type_width \
     (isize) sizeof
@@ -61,7 +61,7 @@ namespace pax
     static const isize ALIGN_MAX = ALIGN_ISIZE;
     static const isize ALIGN_MIN = ALIGN_BYTE;
 
-    static const byte  MAX_BYTE  = 0xff;
+    static const byte  MAX_BYTE  = INT8_MAX;
     static const usize MAX_USIZE = UINTPTR_MAX;
     static const u64   MAX_U64   = UINT64_MAX;
     static const u32   MAX_U32   = UINT32_MAX;
@@ -73,7 +73,7 @@ namespace pax
     static const i16   MAX_I16   = INT16_MAX;
     static const i8    MAX_I8    = INT8_MAX;
 
-    static const byte  MIN_BYTE  = 0x0;
+    static const byte  MIN_BYTE  = INT8_MIN;
     static const usize MIN_USIZE = 0x0;
     static const u64   MIN_U64   = 0x0;
     static const u32   MIN_U32   = 0x0;
@@ -84,6 +84,50 @@ namespace pax
     static const i32   MIN_I32   = INT32_MIN;
     static const i16   MIN_I16   = INT16_MIN;
     static const i8    MIN_I8    = INT8_MIN;
+
+    struct s8;
+    struct Buff;
+
+    struct s8 {
+        //
+        //
+        // Variables.
+        //
+        //
+
+        const byte* addr;
+        isize       size;
+
+        //
+        //
+        // Operations.
+        //
+        //
+
+        template <isize Size>
+        constexpr s8(const byte (&addr)[Size]);
+
+        const byte&
+        operator[](isize index) const;
+    };
+
+    s8
+    s8_from(const Buff* buffer);
+
+    static const isize WIDTH_S8 = pax_type_width(s8);
+    static const isize ALIGN_S8 = pax_type_align(s8);
+
+    //
+    //
+    // Implementation.
+    //
+    //
+
+    template <isize Size>
+    constexpr s8::s8(const byte (&addr)[Size])
+        : addr {addr}
+        , size {Size - 1}
+    {}
 } // namespace pax
 
 #endif // PAX_CORE_TYPES_HPP

@@ -2,15 +2,11 @@
 #define PAX_CORE_BUFF_HPP
 
 #include <pax_core/types.hpp>
-#include <pax_core/str8.hpp>
-#include <pax_core/arr.hpp>
+#include <pax_core/array.hpp>
 #include <pax_core/write.hpp>
 
 namespace pax
 {
-    struct Buff_Res;
-    struct Buff;
-
     enum Buff_Err : isize {
         buff_err_none     = 0,
         buff_err_overflow = 1,
@@ -36,7 +32,7 @@ namespace pax
         byte* curr;
     };
 
-    extern const Arr<str8, buff_err_count> BUFF_ERR_TITLE;
+    extern const Array<s8, buff_err_count> BUFF_ERR_TITLE;
 
     Buff
     buff_from(byte* addr, isize size, Buff_Full full = buff_full_false);
@@ -54,16 +50,16 @@ namespace pax
     buff_copy_byte(Buff* buffer, byte value, isize count = 1);
 
     Buff_Res
-    buff_copy_str8(Buff* buffer, str8 value);
-
-    Buff_Res
-    buff_rcopy_str8(Buff* buffer, str8 value);
-
-    Buff_Res
     buff_copy(Buff* buffer, Buff* value);
 
     Buff_Res
     buff_rcopy(Buff* buffer, Buff* value);
+
+    Buff_Res
+    buff_copy_s8(Buff* buffer, s8 value);
+
+    Buff_Res
+    buff_rcopy_s8(Buff* buffer, s8 value);
 
     Buff_Res
     buff_copy_u64(Buff* buffer, u64 value);

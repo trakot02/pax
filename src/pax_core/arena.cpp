@@ -1,4 +1,4 @@
-#include <cstdlib>
+#include <stdlib.h>
 
 #include <pax_core/arena.hpp>
 #include <pax_core/report.hpp>
@@ -10,7 +10,7 @@ namespace pax
     arena_attach(Arena* arena, isize size);
 
     Arena_Buff*
-    arena_detach(Arena* arena, Arena_Buff* buff);
+    arena_detach(Arena* arena, Arena_Buff* buffer);
 
     //
     //
@@ -18,7 +18,7 @@ namespace pax
     //
     //
 
-    const Arr<str8, arena_err_count> ARENA_ERR_TITLE = {
+    const Array<s8, arena_err_count> ARENA_ERR_TITLE = {
         "arena_err_none",
         "arena_err_request_too_big",
         "arena_err_out_of_memory",
@@ -45,7 +45,7 @@ namespace pax
         pax_trace();
         pax_guard(size >= 0, "`size` is negative");
 
-        Arena_Buff self = {0};
+        auto self = Arena_Buff {0};
 
         if ( addr == 0 ) return self;
 
@@ -57,13 +57,13 @@ namespace pax
     }
 
     byte*
-    arena_buff_request(Arena_Buff* buff, isize width, isize align, isize count)
+    arena_buff_request(Arena_Buff* buffer, isize width, isize align, isize count)
     {
         pax_trace();
-        pax_guard(buff  != 0, "`buff` is null");
-        pax_guard(width  > 0, "`width` isn't positive");
+        pax_guard(buffer != 0, "`buffer` is null");
+        pax_guard(width   > 0, "`width` isn't positive");
 
-        auto& self = *buff;
+        auto& self = *buffer;
         byte* addr = align_forw(self.curr, align);
 
         pax_guard((((usize) addr) & (align - 1)) == 0,
@@ -75,9 +75,9 @@ namespace pax
 
         if ( 0 < count && count <= limit ) {
             isize size = width * count;
-            auto  temp = buff_from(addr, size);
+            auto  buff = buff_from(addr, size);
 
-            buff_fill(&temp, 0);
+            buff_fill(&buff, 0);
 
             self.curr = addr + size;
 
@@ -88,12 +88,12 @@ namespace pax
     }
 
     void
-    arena_buff_release(Arena_Buff* buff)
+    arena_buff_release(Arena_Buff* buffer)
     {
         pax_trace();
-        pax_guard(buff != 0, "`buff` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
-        auto& self = *buff;
+        auto& self = *buffer;
 
         self.curr = self.head;
     }
@@ -104,7 +104,7 @@ namespace pax
         pax_trace();
         pax_guard(size >= 0, "`size` is negative");
 
-        Arena self = {0};
+        auto self = Arena {0};
 
         self.size = size;
 
@@ -118,10 +118,10 @@ namespace pax
         pax_guard(arena != 0, "`arena` is null");
 
         auto& self = *arena;
-        auto* buff = self.list;
+        auto* node = self.list;
 
-        while ( buff != 0 )
-            buff = arena_detach(arena, buff);
+        while ( node != 0 )
+            node = arena_detach(arena, node);
 
         self.list = 0;
     }
@@ -141,19 +141,19 @@ namespace pax
         if ( self.list == 0 )
             self.list = arena_attach(arena, self.size);
 
-        auto* buff = self.list;
+        auto* node = self.list;
 
         while ( addr == 0 ) {
-            if ( buff == 0 )
+            if ( node == 0 )
                 return {0, 0, 0, 0, arena_err_out_of_memory};
 
-            addr = arena_buff_request(buff,
+            addr = arena_buff_request(node,
                 width, align, count);
 
-            if ( addr == 0 && buff->next == 0 )
-                buff->next = arena_attach(arena, self.size);
+            if ( addr == 0 && node->next == 0 )
+                node->next = arena_attach(arena, self.size);
 
-            buff = buff->next;
+            node = node->next;
         }
 
         return {width, align, count, addr, arena_err_none};
@@ -166,12 +166,12 @@ namespace pax
         pax_guard(arena != 0, "`arena` is null");
 
         auto& self = *arena;
-        auto* buff = self.list;
+        auto* node = self.list;
 
-        while ( buff != 0 ) {
-            arena_buff_release(buff);
+        while ( node != 0 ) {
+            arena_buff_release(node);
 
-            buff = buff->next;
+            node = node->next;
         }
     }
 
@@ -196,32 +196,32 @@ namespace pax
         if ( size <= MAX_ISIZE - WIDTH_BUFF ) {
             byte* alloc = (byte*) calloc(size + WIDTH_BUFF, 1);
 
-            auto* buff = (Arena_Buff*) alloc;
-            auto* addr = alloc + WIDTH_BUFF;
+            auto* buffer = (Arena_Buff*) alloc;
+            auto* addr   = alloc + WIDTH_BUFF;
 
             if ( alloc != 0 )
-                *buff = arena_buff_from(addr, size);
+                *buffer = arena_buff_from(addr, size);
 
-            return buff;
+            return buffer;
         }
 
         return 0;
     }
 
     Arena_Buff*
-    arena_detach(Arena* arena, Arena_Buff* buff)
+    arena_detach(Arena* arena, Arena_Buff* buffer)
     {
         pax_trace();
         pax_guard(arena != 0, "`arena` is null");
 
         auto& self = *arena;
+        auto* next = buffer;
 
-        if ( buff == 0 )
-            return 0;
+        if ( buffer != 0 ) {
+            next = buffer->next;
 
-        auto* next = buff->next;
-
-        free(buff);
+            free(buffer);
+        }
 
         return next;
     }

@@ -1,14 +1,16 @@
 #ifndef PAX_CORE_REPORT_HPP
 #define PAX_CORE_REPORT_HPP
 
-#include <pax_core/types.hpp>
 #include <pax_core/debug.hpp>
-#include <pax_core/str8.hpp>
+#include <pax_core/types.hpp>
+
+// todo (trakot02):
+//
+// Implement a way to give extra information
+// about functions and types.
 
 namespace pax
 {
-    struct Report;
-
     enum Report_Level : isize {
         report_level_none    = 0,
         report_level_panic   = 1,
@@ -30,11 +32,14 @@ namespace pax
     };
 
     struct Report {
-        str8  text;
-        str8  func;
-        str8  file;
+        s8    text;
+        s8    func;
+        s8    file;
         isize line;
     };
+
+    extern const Report_Level REPORT_LEVEL_BASE;
+    extern const Report_Guard REPORT_GUARD_BASE;
 
     extern Report_Level REPORT_LEVEL;
     extern Report_Guard REPORT_GUARD;
@@ -61,7 +66,7 @@ namespace pax
     report_trace(Report report);
 
     void
-    report_guard(str8 expr, Report report);
+    report_guard(s8 expr, Report report);
 } // namespace pax
 
 #define pax_panic(text) \

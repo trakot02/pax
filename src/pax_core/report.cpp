@@ -1,7 +1,12 @@
-#include <cstdio>
-#include <csignal>
-
 #include <pax_core/report.hpp>
+
+#include <signal.h>
+
+// todo (trakot02):
+//
+// Use the custom implementation for writing
+// to files.
+#include <stdio.h>
 
 namespace pax
 {
@@ -11,8 +16,11 @@ namespace pax
     //
     //
 
-    Report_Level REPORT_LEVEL = report_level_success;
-    Report_Guard REPORT_GUARD = report_guard_true;
+    const Report_Level REPORT_LEVEL_BASE = report_level_success;
+    const Report_Guard REPORT_GUARD_BASE = report_guard_true;
+
+    Report_Level REPORT_LEVEL = REPORT_LEVEL_BASE;
+    Report_Guard REPORT_GUARD = REPORT_GUARD_BASE;
 
     void
     report_panic(Report report)
@@ -147,7 +155,7 @@ namespace pax
     }
 
     void
-    report_guard(str8 expr, Report report)
+    report_guard(s8 expr, Report report)
     {
         if ( REPORT_GUARD != report_guard_true )
             return;

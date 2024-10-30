@@ -1,5 +1,5 @@
-#ifndef PAX_CORE_ARR_HPP
-#define PAX_CORE_ARR_HPP
+#ifndef PAX_CORE_ARRAY_HPP
+#define PAX_CORE_ARRAY_HPP
 
 #include <pax_core/types.hpp>
 #include <pax_core/report.hpp>
@@ -7,7 +7,7 @@
 namespace pax
 {
     template <class Type, isize Size>
-    struct Arr {
+    struct Array {
         //
         //
         // Variables.
@@ -18,6 +18,7 @@ namespace pax
             Size;
 
         Type addr[size];
+
         //
         //
         // Operations.
@@ -39,7 +40,7 @@ namespace pax
 
     template <class Type, isize Size>
     const Type&
-    Arr<Type, Size>::operator[](isize index) const
+    Array<Type, Size>::operator[](isize index) const
     {
         pax_trace();
         pax_guard(0 <= index && index < size,
@@ -50,7 +51,7 @@ namespace pax
 
     template <class Type, isize Size>
     Type&
-    Arr<Type, Size>::operator[](isize index)
+    Array<Type, Size>::operator[](isize index)
     {
         pax_trace();
         pax_guard(0 <= index && index < size,
@@ -60,4 +61,4 @@ namespace pax
     }
 } // namespace pax
 
-#endif // PAX_CORE_ARR_HPP
+#endif // PAX_CORE_ARRAY_HPP

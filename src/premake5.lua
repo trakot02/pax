@@ -9,17 +9,17 @@ project "pax_core"
     files {
         "pax_core/debug.hpp",
         "pax_core/types.hpp",
-        "pax_core/str8.hpp",
-        "pax_core/str8.cpp",
-        "pax_core/arr.hpp",
+        "pax_core/types.cpp",
         "pax_core/report.hpp",
         "pax_core/report.cpp",
+        "pax_core/array.hpp",
         "pax_core/write.hpp",
         "pax_core/write.cpp",
         "pax_core/buff.hpp",
         "pax_core/buff.cpp",
         "pax_core/arena.hpp",
         "pax_core/arena.cpp",
+        "pax_core/slice.hpp",
         "pax_core/export.hpp",
     }
 

@@ -23,19 +23,19 @@
 
 #if defined(_MSC_VER)
 
-    #define pax_debug_break()
+    #define pax_debug_break() \
         __debugbreak()
 
 #elif defined(PAX_SYSTEM_POSIX)
 
-    #include <csignal>
+    #include <signal.h>
 
     #define pax_debug_break() \
         raise(SIGTRAP)
 
 #else
 
-    #define pax_debug_break() ;
+    #define pax_debug_break()
 
 #endif
 

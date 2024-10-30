@@ -2,12 +2,9 @@
 #define PAX_CORE_EXPORT_HPP
 
 #include <pax_core/debug.hpp>
-
 #include <pax_core/types.hpp>
-#include <pax_core/str8.hpp>
-#include <pax_core/arr.hpp>
-
 #include <pax_core/report.hpp>
+#include <pax_core/array.hpp>
 
 #include <pax_core/write.hpp>
 // #include <pax_core/read.hpp>

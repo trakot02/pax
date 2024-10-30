@@ -2,26 +2,48 @@
 #define PAX_CORE_SLICE_HPP
 
 #include <pax_core/types.hpp>
+#include <pax_core/array.hpp>
 #include <pax_core/arena.hpp>
-#include <pax_core/arr.hpp>
 #include <pax_core/buff.hpp>
 
 namespace pax
 {
     template <class Type>
-    struct Slice;
+    struct Slice {
+        //
+        //
+        // Variables.
+        //
+        //
+
+        Type* addr;
+        isize size;
+        isize limit;
+
+        //
+        //
+        // Operations.
+        //
+        //
+
+        const Type&
+        operator[](isize index) const;
+
+        Type&
+        operator[](isize index);
+    };
 
     template <class Type, isize Size>
     Slice<Type>
-    slice_from(Arr<Type, Size>&& value);
+    slice_from(Array<Type, Size>&& value);
 
     template <class Type, isize Size>
     Slice<const Type>
-    slice_from(const Arr<Type, Size>& value);
+    slice_from(const Array<Type, Size>& value);
 
     template <class Type, isize Size>
     Slice<Type>
-    slice_from(Arr<Type, Size>& value);
+    slice_from(Array<Type, Size>& value);
 
     template <class Type>
     Slice<Type>
@@ -45,7 +67,7 @@ namespace pax
 
     template <class Type, isize Size>
     Slice<Type>
-    slice_insert_array(Slice<Type>* slice, Arena* arena, isize index, const Arr<Type, Size>& value);
+    slice_insert_array(Slice<Type>* slice, Arena* arena, isize index, const Array<Type, Size>& value);
 
     template <class Type>
     Slice<Type>
@@ -71,30 +93,6 @@ namespace pax
     void
     slice_take(Slice<Type>* slice, isize index, isize count);
 */
-    template <class Type>
-    struct Slice {
-        //
-        //
-        // Variables.
-        //
-        //
-
-        Type* addr;
-        isize size;
-        isize limit;
-
-        //
-        //
-        // Operations.
-        //
-        //
-
-        const Type&
-        operator[](isize index) const;
-
-        Type&
-        operator[](isize index);
-    };
 
     //
     //
@@ -126,7 +124,7 @@ namespace pax
 
     template <class Type, isize Size>
     Slice<Type>
-    slice_from(Arr<Type, Size>&& value)
+    slice_from(Array<Type, Size>&& value)
     {
         pax_trace();
 
@@ -141,7 +139,7 @@ namespace pax
 
     template <class Type, isize Size>
     Slice<const Type>
-    slice_from(const Arr<Type, Size>& value)
+    slice_from(const Array<Type, Size>& value)
     {
         pax_trace();
 
@@ -156,7 +154,7 @@ namespace pax
 
     template <class Type, isize Size>
     Slice<Type>
-    slice_from(Arr<Type, Size>& value)
+    slice_from(Array<Type, Size>& value)
     {
         pax_trace();
 
@@ -295,7 +293,7 @@ namespace pax
 
     template <class Type, isize Size>
     Slice<Type>
-    slice_insert_array(Slice<Type>* slice, Arena* arena, isize index, const Arr<Type, Size>& value)
+    slice_insert_array(Slice<Type>* slice, Arena* arena, isize index, const Array<Type, Size>& value)
     {
         isize count = value.size;
 
