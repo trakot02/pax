@@ -15,7 +15,7 @@ namespace pax
     };
 
     Write_Res
-    write_byte(const Write* write, byte value)
+    write_byte(const Write* write, byte value, isize count)
     {
         pax_trace();
         pax_guard(write != 0, "`write` is null");
@@ -25,7 +25,7 @@ namespace pax
 
         pax_guard(func != 0, "The function is null");
 
-        return (*func)(self.self, value);
+        return (*func)(self.self, value, count);
     }
 
     Write_Res
@@ -57,7 +57,7 @@ namespace pax
     }
 
     Write_Res
-    write_u64(const Write* write, u64 value)
+    write_u64(const Write* write, u64 value, Write_Radix radix)
     {
         pax_trace();
         pax_guard(write != 0, "`write` is null");
@@ -67,11 +67,11 @@ namespace pax
 
         pax_guard(func != 0, "The function is null");
 
-        return (*func)(self.self, value);
+        return (*func)(self.self, value, radix);
     }
 
     Write_Res
-    write_i64(const Write* write, i64 value)
+    write_i64(const Write* write, i64 value, Write_Radix radix)
     {
         pax_trace();
         pax_guard(write != 0, "`write` is null");
@@ -81,7 +81,7 @@ namespace pax
 
         pax_guard(func != 0, "The function is null");
 
-        return (*func)(self.self, value);
+        return (*func)(self.self, value, radix);
     }
 
     Write_Res

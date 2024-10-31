@@ -16,7 +16,7 @@ namespace pax
         pax_trace();
 
         auto  self = s8 {""};
-        isize size = buff_count(buffer);
+        isize size = buff_size(buffer);
 
         self.addr = buffer->head;
         self.size = size;

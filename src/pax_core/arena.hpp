@@ -3,6 +3,7 @@
 
 #include <pax_core/types.hpp>
 #include <pax_core/array.hpp>
+#include <pax_core/alloc.hpp>
 
 // todo (trakot02):
 //
@@ -38,6 +39,7 @@ namespace pax
 
     struct Arena {
         isize       size;
+        Alloc       alloc;
         Arena_Buff* list;
     };
 
@@ -56,7 +58,7 @@ namespace pax
     arena_buff_release(Arena_Buff* buffer);
 
     Arena
-    arena_init(isize size);
+    arena_init(isize size, Alloc alloc = base_alloc());
 
     void
     arena_drop(Arena* arena);
@@ -66,6 +68,9 @@ namespace pax
 
     void
     arena_release(Arena* arena);
+
+    Alloc
+    arena_set_alloc(Arena* arena, Alloc alloc);
 } // namespace pax
 
 #endif // PAX_CORE_ARENA_HPP

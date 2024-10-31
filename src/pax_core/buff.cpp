@@ -1,25 +1,26 @@
 #include <pax_core/buff.hpp>
 #include <pax_core/report.hpp>
+#include <pax_core/slice.hpp>
 
 namespace pax
 {
     Write_Res
-    buff_write_byte(void* buffer, byte value);
+    _buff_write_byte(void* buffer, byte value, isize count);
 
     Write_Res
-    buff_write_buff(void* buffer, Buff* value);
+    _buff_write_buff(void* buffer, Buff* value);
 
     Write_Res
-    buff_write_s8(void* buffer, s8 value);
+    _buff_write_s8(void* buffer, s8 value);
 
     Write_Res
-    buff_write_u64(void* buffer, u64 value);
+    _buff_write_u64(void* buffer, u64 value, Write_Radix radix);
 
     Write_Res
-    buff_write_i64(void* buffer, i64 value);
+    _buff_write_i64(void* buffer, i64 value, Write_Radix radix);
 
     Write_Res
-    buff_write_addr(void* buffer, void* value);
+    _buff_write_addr(void* buffer, void* value);
 
     //
     //
@@ -27,9 +28,33 @@ namespace pax
     //
     //
 
-    const Array<s8, buff_err_count> BUFF_ERR_TITLE = {
-        "buff_err_none",
-        "buff_err_overflow",
+    static const auto DIGITS_DEC = Array<byte, 10> {
+        '0', '1', '2', '3', '4',
+        '5', '6', '7', '8', '9',
+    };
+
+    static const auto DIGITS_HEX = Array<byte, 16> {
+        '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+    };
+
+    static const auto DIGITS_BIN = Array<byte, 2> {
+        '0', '1',
+    };
+
+    static const auto DIGITS_OCT = Array<byte, 8> {
+        '0', '1', '2', '3', '4', '5', '6', '7',
+    };
+
+    static const auto DIGITS_ARRAY = Array<Slice<const byte>, write_radix_count> {
+        slice_from(DIGITS_DEC),
+        slice_from(DIGITS_HEX),
+        slice_from(DIGITS_BIN),
+        slice_from(DIGITS_OCT),
+    };
+
+    static const auto PREFIX_ARRAY = Array<s8, write_radix_count> {
+        "", "x0", "b0", "o0",
     };
 
     Buff
@@ -67,7 +92,7 @@ namespace pax
     }
 
     isize
-    buff_count(const Buff* buffer)
+    buff_size(const Buff* buffer)
     {
         pax_trace();
         pax_guard(buffer != 0, "`buffer` is null");
@@ -88,8 +113,8 @@ namespace pax
         return self.tail - self.curr;
     }
 
-    Buff_Res
-    buff_copy_byte(Buff* buffer, byte value, isize count)
+    Write_Res
+    buff_write_byte(Buff* buffer, byte value, isize count)
     {
         pax_trace();
         pax_guard(buffer != 0, "`buffer` is null");
@@ -99,18 +124,18 @@ namespace pax
         isize avail = self.tail - self.curr;
 
         if ( count > avail )
-            return {0, buff_err_overflow};
+            return {0, write_err_overflow};
 
         for ( isize i = 0; i < count; i += 1 )
             self.curr[i] = value;
 
         self.curr += count;
 
-        return {count, buff_err_none};
+        return {count, write_err_none};
     }
 
-    Buff_Res
-    buff_copy(Buff* buffer, Buff* value)
+    Write_Res
+    buff_write_buff(Buff* buffer, Buff* value)
     {
         pax_trace();
         pax_guard(buffer != 0, "`buffer` is null");
@@ -122,7 +147,7 @@ namespace pax
         isize count = buff.curr - buff.head;
 
         if ( count > avail )
-            return {0, buff_err_overflow};
+            return {0, write_err_overflow};
 
         for ( isize i = 0; i < count; i += 1 )
             self.curr[i] = buff.head[i];
@@ -130,11 +155,11 @@ namespace pax
         self.curr += count;
         buff.curr  = buff.head;
 
-        return {count, buff_err_none};
+        return {count, write_err_none};
     }
 
-    Buff_Res
-    buff_rcopy(Buff* buffer, Buff* value)
+    Write_Res
+    buff_rwrite_buff(Buff* buffer, Buff* value)
     {
         pax_trace();
         pax_guard(buffer != 0, "`buffer` is null");
@@ -146,7 +171,7 @@ namespace pax
         isize count = buff.curr - buff.head;
 
         if ( count > avail )
-            return {0, buff_err_overflow};
+            return {0, write_err_overflow};
 
         for ( isize i = 0; i < count; i += 1 )
             self.curr[i] = buff.head[count - i - 1];
@@ -154,11 +179,11 @@ namespace pax
         self.curr += count;
         buff.curr  = buff.head;
 
-        return {count, buff_err_none};
+        return {count, write_err_none};
     }
 
-    Buff_Res
-    buff_copy_s8(Buff* buffer, s8 value)
+    Write_Res
+    buff_write_s8(Buff* buffer, s8 value)
     {
         pax_trace();
         pax_guard(buffer != 0, "`buffer` is null");
@@ -168,18 +193,18 @@ namespace pax
         isize count = value.size;
 
         if ( count > avail )
-            return {0, buff_err_overflow};
+            return {0, write_err_overflow};
 
         for ( isize i = 0; i < count; i += 1 )
             self.curr[i] = value[i];
 
         self.curr += count;
 
-        return {count, buff_err_none};
+        return {count, write_err_none};
     }
 
-    Buff_Res
-    buff_rcopy_s8(Buff* buffer, s8 value)
+    Write_Res
+    buff_rwrite_s8(Buff* buffer, s8 value)
     {
         pax_trace();
         pax_guard(buffer != 0, "`buffer` is null");
@@ -189,148 +214,135 @@ namespace pax
         isize count = value.size;
 
         if ( count > avail )
-            return {0, buff_err_overflow};
+            return {0, write_err_overflow};
 
         for ( isize i = 0; i < count; i += 1 )
             self.curr[i] = value[count - i - 1];
 
         self.curr += count;
 
-        return {count, buff_err_none};
+        return {count, write_err_none};
     }
 
-    Buff_Res
-    buff_copy_u64(Buff* buffer, u64 value)
+    Write_Res
+    buff_write_u64(Buff* buffer, u64 value, Write_Radix radix)
     {
-        static const auto radix = Array<byte, 10> {
-            '0', '1', '2', '3', '4',
-            '5', '6', '7', '8', '9',
-        };
-
         pax_trace();
         pax_guard(buffer != 0, "`buffer` is null");
+
+        pax_guard(0 <= radix && radix < write_radix_count,
+            "`radix` is not a valid option");
+
+        auto& prefix = PREFIX_ARRAY[radix];
+        auto& digits = DIGITS_ARRAY[radix];
 
         auto& self  = *buffer;
         isize avail = self.tail - self.curr;
         isize count = 0;
+        isize index = 0;
 
-        auto  array = Array<byte, 64> {};
-        u64   temp  = value;
-        isize indx  = 0;
+        u64 other = value;
 
         do {
-            if ( count > array.size || count > avail )
-                return {0, buff_err_overflow};
+            if ( count >= avail )
+                return {0, write_err_overflow};
 
-            indx = temp % radix.size;
-            temp = temp / radix.size;
+            index = other % digits.size;
+            other = other / digits.size;
 
-            array[count] = radix[indx];
+            self.curr[count] = digits[index];
 
             count += 1;
-        } while ( temp != 0 );
+        } while ( other != 0 );
 
-        for ( isize i = 0; i < count; i += 1 )
-            self.curr[i] = array[count - i - 1];
+        if ( count > avail - prefix.size )
+            return {0, write_err_overflow};
+
+        for ( isize i = 0; i < prefix.size; i += 1 )
+            self.curr[i + count] = prefix[i];
+
+        count += prefix.size;
+
+        for ( isize i = 0; i < count / 2; i += 1 ) {
+            byte  temp = self.curr[i];
+            isize j    = count - i - 1;
+
+            self.curr[i] = self.curr[j];
+            self.curr[j] = temp;
+        }
 
         self.curr += count;
 
-        return {count, buff_err_none};
+        return {count, write_err_none};
     }
 
-    Buff_Res
-    buff_copy_i64(Buff* buffer, i64 value)
+    Write_Res
+    buff_write_i64(Buff* buffer, i64 value, Write_Radix radix)
     {
-        static const auto radix = Array<byte, 10> {
-            '0', '1', '2', '3', '4',
-            '5', '6', '7', '8', '9',
-        };
-
         pax_trace();
         pax_guard(buffer != 0, "`buffer` is null");
 
+        pax_guard(0 <= radix && radix < write_radix_count,
+            "`radix` is not a valid option");
+
+        auto& prefix = PREFIX_ARRAY[radix];
+        auto& digits = DIGITS_ARRAY[radix];
+
         auto& self  = *buffer;
-        isize avail = self.tail - self.curr;
+        isize avail = self.tail - self.curr - prefix.size;
         isize count = 0;
+        isize index = 0;
 
-        auto  array = Array<byte, 64> {};
-        u64   temp  = value;
-        isize indx  = 0;
-        byte  sign  = '+';
-
-        avail -= (value != 0);
+        u64  other = value;
+        byte sign  = '+';
 
         if ( value < 0 ) {
-            temp = ~temp + 1;
-            sign = '-';
+            other = ~other + 1;
+            sign  = '-';
         }
 
         do {
-            if ( count > array.size || count > avail )
-                return {0, buff_err_overflow};
+            if ( count >= avail )
+                return {0, write_err_overflow};
 
-            indx = temp % radix.size;
-            temp = temp / radix.size;
+            index = other % digits.size;
+            other = other / digits.size;
 
-            array[count] = radix[indx];
+            self.curr[count] = digits[index];
 
             count += 1;
-        } while ( temp != 0 );
+        } while ( other != 0 );
 
-        if ( value != 0 ) {
-            self.curr[0]  = sign;
-            self.curr    += 1;
+        if ( count > avail - prefix.size - (value != 0) )
+            return {0, write_err_overflow};
+
+        for ( isize i = 0; i < prefix.size; i += 1 )
+            self.curr[i + count] = prefix[i];
+
+        count += prefix.size;
+
+        if ( value != 0 )
+            self.curr[count] = sign;
+
+        count += (value != 0);
+
+        for ( isize i = 0; i < count / 2; i += 1 ) {
+            byte  temp = self.curr[i];
+            isize j    = count - i - 1;
+
+            self.curr[i] = self.curr[j];
+            self.curr[j] = temp;
         }
-
-        for ( isize i = 0; i < count; i += 1 )
-            self.curr[i] = array[count - i - 1];
 
         self.curr += count;
 
-        return {count, buff_err_none};
+        return {count, write_err_none};
     }
 
-    Buff_Res
-    buff_copy_addr(Buff* buffer, void* value)
+    Write_Res
+    buff_write_addr(Buff* buffer, void* value)
     {
-        static const auto radix = Array<byte, 16> {
-            '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
-        };
-
-        pax_trace();
-        pax_guard(buffer != 0, "`buffer` is null");
-
-        auto& self  = *buffer;
-        isize avail = (self.tail - self.curr) - 2;
-        isize count = 0;
-
-        auto  array = Array<byte, 64> {};
-        usize temp  = (usize) value;
-        isize indx  = 0;
-
-        do {
-            if ( count > array.size || count > avail )
-                return {0, buff_err_overflow};
-
-            indx = temp % radix.size;
-            temp = temp / radix.size;
-
-            array[count] = radix[indx];
-
-            count += 1;
-        } while ( temp != 0 );
-
-        self.curr[0]  = '0';
-        self.curr[1]  = 'x';
-        self.curr    += 2;
-
-        for ( isize i = 0; i < count; i += 1 )
-            self.curr[i] = array[count - i - 1];
-
-        self.curr += count;
-
-        return {count, buff_err_none};
+        return buff_write_u64(buffer, (usize) value, write_radix_hex);
     }
 
     void
@@ -345,7 +357,7 @@ namespace pax
     }
 
     void
-    buff_fill(Buff* buffer, byte value)
+    buff_fill_byte(Buff* buffer, byte value)
     {
         pax_trace();
         pax_guard(buffer != 0, "`buffer` is null");
@@ -359,6 +371,23 @@ namespace pax
         self.curr = self.tail;
     }
 
+    void
+    buff_fill_addr(Buff* buffer, byte* addr)
+    {
+        pax_trace();
+        pax_guard(buffer != 0, "`buffer` is null");
+
+        auto& self  = *buffer;
+        isize avail = self.tail - self.curr;
+
+        if ( addr == 0 ) return;
+
+        for ( isize i = 0; i < avail; i += 1 )
+            self.curr[i] = addr[i];
+
+        self.curr = self.tail;
+    }
+
     Write
     buff_write(Buff* buffer)
     {
@@ -367,12 +396,12 @@ namespace pax
 
         auto self = Write {0};
 
-        self.byte_func = &buff_write_byte;
-        self.buff_func = &buff_write_buff;
-        self.s8_func   = &buff_write_s8;
-        self.u64_func  = &buff_write_u64;
-        self.i64_func  = &buff_write_i64;
-        self.addr_func = &buff_write_addr;
+        self.byte_func = &_buff_write_byte;
+        self.buff_func = &_buff_write_buff;
+        self.s8_func   = &_buff_write_s8;
+        self.u64_func  = &_buff_write_u64;
+        self.i64_func  = &_buff_write_i64;
+        self.addr_func = &_buff_write_addr;
         self.self      = buffer;
 
         return self;
@@ -385,200 +414,38 @@ namespace pax
     //
 
     Write_Res
-    buff_write_byte(void* buffer, byte value)
+    _buff_write_byte(void* buffer, byte value, isize count)
     {
-        pax_trace();
-        pax_guard(buffer != 0, "`buffer` is null");
-
-        auto& self  = *(Buff*) buffer;
-        isize avail = self.tail - self.curr;
-        isize count = 1;
-
-        if ( count > avail )
-            return {0, write_err_overflow};
-
-        self.curr[0]  = value;
-        self.curr    += count;
-
-        return {count, write_err_none};
+        return buff_write_byte((Buff*) buffer, value, count);
     }
 
     Write_Res
-    buff_write_buff(void* buffer, Buff* value)
+    _buff_write_buff(void* buffer, Buff* value)
     {
-        pax_trace();
-        pax_guard(buffer != 0, "`buffer` is null");
-        pax_guard(value  != 0, "`value` is null");
-
-        auto& self  = *(Buff*) buffer;
-        auto& buff  = *value;
-        isize avail = self.tail - self.curr;
-        isize count = buff.curr - buff.head;
-
-        if ( count > avail )
-            return {0, write_err_overflow};
-
-        for ( isize i = 0; i < count; i += 1 )
-            self.curr[i] = buff.head[i];
-
-        self.curr += count;
-        buff.curr  = buff.head;
-
-        return {count, write_err_none};
+        return buff_write_buff((Buff*) buffer, value);
     }
 
     Write_Res
-    buff_write_s8(void* buffer, s8 value)
+    _buff_write_s8(void* buffer, s8 value)
     {
-        pax_trace();
-        pax_guard(buffer != 0, "`buffer` is null");
-
-        auto& self  = *(Buff*) buffer;
-        isize avail = self.tail - self.curr;
-        isize count = value.size;
-
-        if ( count > avail )
-            return {0, write_err_overflow};
-
-        for ( isize i = 0; i < count; i += 1 )
-            self.curr[i] = value[i];
-
-        self.curr += count;
-
-        return {count, write_err_none};
+        return buff_write_s8((Buff*) buffer, value);
     }
 
     Write_Res
-    buff_write_u64(void* buffer, u64 value)
+    _buff_write_u64(void* buffer, u64 value, Write_Radix radix)
     {
-        static const auto radix = Array<byte, 10> {
-            '0', '1', '2', '3', '4',
-            '5', '6', '7', '8', '9',
-        };
-
-        pax_trace();
-        pax_guard(buffer != 0, "`buffer` is null");
-
-        auto& self  = *(Buff*) buffer;
-        isize avail = self.tail - self.curr;
-        isize count = 0;
-
-        auto  array = Array<byte, 64> {};
-        u64   temp  = value;
-        isize indx  = 0;
-
-        do {
-            if ( count > array.size || count > avail )
-                return {0, write_err_overflow};
-
-            indx = temp % radix.size;
-            temp = temp / radix.size;
-
-            array[count] = radix[indx];
-
-            count += 1;
-        } while ( temp != 0 );
-
-        for ( isize i = 0; i < count; i += 1 )
-            self.curr[i] = array[count - i - 1];
-
-        self.curr += count;
-
-        return {count, write_err_none};
+        return buff_write_u64((Buff*) buffer, value, radix);
     }
 
     Write_Res
-    buff_write_i64(void* buffer, i64 value)
+    _buff_write_i64(void* buffer, i64 value, Write_Radix radix)
     {
-        static const Array<byte, 10> radix = {
-            '0', '1', '2', '3', '4',
-            '5', '6', '7', '8', '9',
-        };
-
-        pax_trace();
-        pax_guard(buffer != 0, "`buffer` is null");
-
-        auto& self  = *(Buff*) buffer;
-        isize avail = self.tail - self.curr;
-        isize count = 0;
-
-        auto  array = Array<byte, 64> {};
-        u64   temp  = value;
-        isize indx  = 0;
-        byte  sign  = '+';
-
-        avail -= (value != 0);
-
-        if ( value < 0 ) {
-            temp = ~temp + 1;
-            sign = '-';
-        }
-
-        do {
-            if ( count > array.size || count > avail )
-                return {0, write_err_overflow};
-
-            indx = temp % radix.size;
-            temp = temp / radix.size;
-
-            array[count] = radix[indx];
-
-            count += 1;
-        } while ( temp != 0 );
-
-        if ( value != 0 ) {
-            self.curr[0]  = sign;
-            self.curr    += 1;
-        }
-
-        for ( isize i = 0; i < count; i += 1 )
-            self.curr[i] = array[count - i - 1];
-
-        self.curr += count;
-
-        return {count, write_err_none};
+        return buff_write_i64((Buff*) buffer, value, radix);
     }
 
     Write_Res
-    buff_write_addr(void* buffer, void* value)
+    _buff_write_addr(void* buffer, void* value)
     {
-        static const Array<byte, 16> radix = {
-            '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
-        };
-
-        pax_trace();
-        pax_guard(buffer != 0, "`buffer` is null");
-
-        auto& self  = *(Buff*) buffer;
-        isize avail = (self.tail - self.curr) - 2;
-        isize count = 0;
-
-        auto  array = Array<byte, 64> {};
-        usize temp  = (usize) value;
-        isize indx  = 0;
-
-        do {
-            if ( count > array.size || count > avail )
-                return {0, write_err_overflow};
-
-            indx = temp % radix.size;
-            temp = temp / radix.size;
-
-            array[count] = radix[indx];
-
-            count += 1;
-        } while ( temp != 0 );
-
-        self.curr[0]  = '0';
-        self.curr[1]  = 'x';
-        self.curr    += 2;
-
-        for ( isize i = 0; i < count; i += 1 )
-            self.curr[i] = array[count - i - 1];
-
-        self.curr += count;
-
-        return {count, write_err_none};
+        return buff_write_addr((Buff*) buffer, value);
     }
 } // namespace pax

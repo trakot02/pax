@@ -17,6 +17,8 @@ project "pax_core"
         "pax_core/write.cpp",
         "pax_core/buff.hpp",
         "pax_core/buff.cpp",
+        "pax_core/alloc.hpp",
+        "pax_core/alloc.cpp",
         "pax_core/arena.hpp",
         "pax_core/arena.cpp",
         "pax_core/slice.hpp",

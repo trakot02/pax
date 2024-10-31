@@ -128,7 +128,7 @@ namespace pax
     {
         pax_trace();
 
-        Slice<Type> self = {0};
+        auto self = Slice<Type> {0};
 
         self.addr  = value.addr;
         self.size  = value.size;
@@ -143,7 +143,7 @@ namespace pax
     {
         pax_trace();
 
-        Slice<const Type> self = {0};
+        auto self = Slice<const Type> {0};
 
         self.addr  = value.addr;
         self.size  = value.size;
@@ -158,7 +158,7 @@ namespace pax
     {
         pax_trace();
 
-        Slice<Type> self = {0};
+        auto self = Slice<Type> {0};
 
         self.addr  = value.addr;
         self.size  = value.size;
@@ -173,7 +173,7 @@ namespace pax
     {
         pax_trace();
 
-        Slice<Type> self = {0};
+        auto self = Slice<Type> {0};
 
         return self;
     }
@@ -236,13 +236,10 @@ namespace pax
         if ( resl.error != arena_err_none )
             pax_warning(ARENA_ERR_TITLE[resl.error]);
 
-        isize size   = resl.width * resl.count;
-        auto  buffer = buff_from(resl.addr, size);
-        auto  source = buff_from(addr, size, buff_full_true);
-        auto  buff   = buff_copy(&buffer, &source);
+        isize size = resl.width * resl.count;
+        auto  buff = buff_from(resl.addr, size);
 
-        pax_guard(buff.error == buff_err_none,
-            "The operation must succeed");
+        buff_fill_addr(&buff, addr);
 
         copy.addr  = (Type*) resl.addr;
         copy.size  = self.size;

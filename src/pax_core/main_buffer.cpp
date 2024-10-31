@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <pax_core/export.hpp>
 
 using namespace pax;
@@ -7,11 +8,12 @@ main(int argc, char* argv[])
 {
     pax_trace();
 
-    auto temp = Array<byte, 56> {};
+    auto temp = Array<byte, 256> {};
     auto buff = buff_from(temp.addr, temp.size);
 
-    buff_copy_s8(&buff, "Prova: ");
-    buff_copy_addr(&buff, &buff);
+    auto res = buff_write_i64(&buff, MIN_I64, write_radix_bin);
 
-    pax_message(s8_from(&buff));
+    printf("wrote = %d\n", res.bytes);
+
+    pax_success(s8_from(&buff));
 }

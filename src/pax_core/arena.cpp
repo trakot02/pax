@@ -65,8 +65,9 @@ namespace pax
 
         auto& self = *buffer;
         byte* addr = align_forw(self.curr, align);
+        usize temp = (usize) addr;
 
-        pax_guard((((usize) addr) & (align - 1)) == 0,
+        pax_guard((temp & (align - 1)) == 0,
             "The result is not aligned properly");
 
         isize extra = addr - self.curr;
@@ -77,7 +78,7 @@ namespace pax
             isize size = width * count;
             auto  buff = buff_from(addr, size);
 
-            buff_fill(&buff, 0);
+            buff_fill_byte(&buff, 0);
 
             self.curr = addr + size;
 
@@ -99,14 +100,15 @@ namespace pax
     }
 
     Arena
-    arena_init(isize size)
+    arena_init(isize size, Alloc alloc)
     {
         pax_trace();
         pax_guard(size >= 0, "`size` is negative");
 
         auto self = Arena {0};
 
-        self.size = size;
+        self.size  = size;
+        self.alloc = alloc;
 
         return self;
     }
@@ -123,7 +125,8 @@ namespace pax
         while ( node != 0 )
             node = arena_detach(arena, node);
 
-        self.list = 0;
+        self.alloc = Alloc {0};
+        self.list  = 0;
     }
 
     Arena_Res
@@ -175,16 +178,38 @@ namespace pax
         }
     }
 
+    Alloc
+    arena_set_alloc(Arena* arena, Alloc alloc)
+    {
+        pax_trace();
+        pax_guard(arena != 0, "`arena` is null");
+
+        auto& self = *arena;
+        auto  temp = self.alloc;
+
+        self.alloc = alloc;
+
+        return temp;
+    }    
+
     //
     //
     // Not exposed.
     //
     //
 
+    // todo (trakot02):
+    //
+    // Allocate the smallest power of two bigger than size:
+    // 
+    // 1. No fragmentation;
+    // 2. Bigger than size;
+    // 3. Extra room for WIDTH_BUFF.
+
     Arena_Buff*
     arena_attach(Arena* arena, isize size)
     {
-        static constexpr isize WIDTH_BUFF =
+        static const isize WIDTH_BUFF =
             pax_type_width(Arena_Buff);
 
         pax_trace();
@@ -194,15 +219,16 @@ namespace pax
         auto& self = *arena;
 
         if ( size <= MAX_ISIZE - WIDTH_BUFF ) {
-            byte* alloc = (byte*) calloc(size + WIDTH_BUFF, 1);
+            byte* pntr = alloc_request(&self.alloc,
+                size + WIDTH_BUFF, ALIGN_MAX, 1);
 
-            auto* buffer = (Arena_Buff*) alloc;
-            auto* addr   = alloc + WIDTH_BUFF;
+            auto* node = (Arena_Buff*) pntr;
+            auto* addr = pntr + WIDTH_BUFF;
 
-            if ( alloc != 0 )
-                *buffer = arena_buff_from(addr, size);
+            if ( node != 0 )
+                *node = arena_buff_from(addr, size);
 
-            return buffer;
+            return node;
         }
 
         return 0;
@@ -211,16 +237,24 @@ namespace pax
     Arena_Buff*
     arena_detach(Arena* arena, Arena_Buff* buffer)
     {
+        static const isize WIDTH_BUFF =
+            pax_type_width(Arena_Buff);
+
         pax_trace();
         pax_guard(arena != 0, "`arena` is null");
 
         auto& self = *arena;
+        auto* node = buffer;
         auto* next = buffer;
 
-        if ( buffer != 0 ) {
-            next = buffer->next;
+        if ( node != 0 ) {
+            isize size = node->tail - node->head;
+            byte* addr = (byte*) node;
 
-            free(buffer);
+            next = node->next;
+
+            alloc_release(&self.alloc, addr,
+                size + WIDTH_BUFF);
         }
 
         return next;
