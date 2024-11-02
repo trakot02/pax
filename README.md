@@ -6,8 +6,10 @@ C++14 system aiming to create tile-based 2D games like old Pokémon games.
 
 To do:
 
-1. Add a file handling system.
+1. For every single function add a test.
 
-2. Complete read/write interfaces.
+2. Add a file handling system.
 
-3. Verify and complete Slice.
+3. Complete read/write interfaces.
+
+4. Verify and complete Slice.

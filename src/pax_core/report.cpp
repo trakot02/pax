@@ -16,8 +16,8 @@ namespace pax
     //
     //
 
-    const Report_Level REPORT_LEVEL_BASE = report_level_success;
-    const Report_Guard REPORT_GUARD_BASE = report_guard_true;
+    const Report_Level REPORT_LEVEL_BASE = _report_level_success;
+    const Report_Guard REPORT_GUARD_BASE = _report_guard_true;
 
     Report_Level REPORT_LEVEL = REPORT_LEVEL_BASE;
     Report_Guard REPORT_GUARD = REPORT_GUARD_BASE;
@@ -25,7 +25,7 @@ namespace pax
     void
     report_panic(Report report)
     {
-        if ( REPORT_LEVEL < report_level_panic )
+        if ( REPORT_LEVEL < _report_level_panic )
             return;
 
         auto text = report.text;
@@ -46,7 +46,7 @@ namespace pax
     void
     report_error(Report report)
     {
-        if ( REPORT_LEVEL < report_level_error )
+        if ( REPORT_LEVEL < _report_level_error )
             return;
 
         auto text = report.text;
@@ -65,7 +65,7 @@ namespace pax
     void
     report_warning(Report report)
     {
-        if ( REPORT_LEVEL < report_level_warning )
+        if ( REPORT_LEVEL < _report_level_warning )
             return;
 
         auto text = report.text;
@@ -84,7 +84,7 @@ namespace pax
     void
     report_message(Report report)
     {
-        if ( REPORT_LEVEL < report_level_message )
+        if ( REPORT_LEVEL < _report_level_message )
             return;
 
         auto text = report.text;
@@ -103,7 +103,7 @@ namespace pax
     void
     report_success(Report report)
     {
-        if ( REPORT_LEVEL < report_level_success )
+        if ( REPORT_LEVEL < _report_level_success )
             return;
 
         auto text = report.text;
@@ -122,7 +122,7 @@ namespace pax
     void
     report_debug(Report report)
     {
-        if ( REPORT_LEVEL < report_level_debug )
+        if ( REPORT_LEVEL < _report_level_debug )
             return;
 
         auto text = report.text;
@@ -141,7 +141,7 @@ namespace pax
     void
     report_trace(Report report)
     {
-        if ( REPORT_LEVEL < report_level_trace )
+        if ( REPORT_LEVEL < _report_level_trace )
             return;
 
         auto func = report.func;
@@ -157,7 +157,7 @@ namespace pax
     void
     report_guard(s8 expr, Report report)
     {
-        if ( REPORT_GUARD != report_guard_true )
+        if ( REPORT_GUARD != _report_guard_true )
             return;
 
         auto text = report.text;

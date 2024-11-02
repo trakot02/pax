@@ -11,14 +11,14 @@ namespace pax
     //
 
     s8
-    s8_from(const Buff* buffer)
+    s8_from(const Buff* buff)
     {
         pax_trace();
 
-        auto  self = s8 {""};
-        isize size = buff_size(buffer);
+        s8    self = "";
+        isize size = buff_size(buff);
 
-        self.addr = buffer->head;
+        self.addr = buff->head;
         self.size = size;
 
         return self;

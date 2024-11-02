@@ -7,6 +7,7 @@ project "pax_core"
     includedirs { "./" }
 
     files {
+        "pax_core/system.hpp",
         "pax_core/debug.hpp",
         "pax_core/types.hpp",
         "pax_core/types.cpp",
@@ -15,6 +16,8 @@ project "pax_core"
         "pax_core/array.hpp",
         "pax_core/write.hpp",
         "pax_core/write.cpp",
+        "pax_core/read.hpp",
+        "pax_core/read.cpp",
         "pax_core/buff.hpp",
         "pax_core/buff.cpp",
         "pax_core/alloc.hpp",

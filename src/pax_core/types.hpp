@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 
+// todo (trakot02):
+//
+// Remove after file handling system.
+#include <stdio.h>
+
 #define pax_type_width \
     (isize) sizeof
 
@@ -112,7 +117,7 @@ namespace pax
     };
 
     s8
-    s8_from(const Buff* buffer);
+    s8_from(const Buff* buff);
 
     static const isize WIDTH_S8 = pax_type_width(s8);
     static const isize ALIGN_S8 = pax_type_align(s8);

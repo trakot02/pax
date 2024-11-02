@@ -9,19 +9,19 @@ namespace pax
     struct Buff;
 
     enum Write_Err : isize {
-        write_err_none     = 0,
-        write_err_overflow = 1,
+        _write_err_none     = 0,
+        _write_err_overflow = 1,
 
-        write_err_count = 2,
+        _write_err_count = 2,
     };
 
     enum Write_Radix : isize {
-        write_radix_dec = 0,
-        write_radix_hex = 1,
-        write_radix_bin = 2,
-        write_radix_oct = 3,
+        _write_radix_dec = 0,
+        _write_radix_hex = 1,
+        _write_radix_bin = 2,
+        _write_radix_oct = 3,
 
-        write_radix_count = 4,
+        _write_radix_count = 4,
     };
 
     struct Write_Res {
@@ -51,7 +51,7 @@ namespace pax
         void* self;
     };
 
-    extern const Array<s8, write_err_count> WRITE_ERR_TITLE;
+    extern const Array<s8, _write_err_count> WRITE_ERR_TITLE;
 
     Write_Res
     write_byte(const Write* write, byte value, isize count = 1);
@@ -63,10 +63,10 @@ namespace pax
     write_s8(const Write* write, s8 value);
 
     Write_Res
-    write_u64(const Write* write, u64 value, Write_Radix radix = write_radix_dec);
+    write_u64(const Write* write, u64 value, Write_Radix radix = _write_radix_dec);
 
     Write_Res
-    write_i64(const Write* write, i64 value, Write_Radix radix = write_radix_dec);
+    write_i64(const Write* write, i64 value, Write_Radix radix = _write_radix_dec);
 
     Write_Res
     write_addr(const Write* write, void* value);

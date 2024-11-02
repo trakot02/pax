@@ -12,23 +12,23 @@
 namespace pax
 {
     enum Report_Level : isize {
-        report_level_none    = 0,
-        report_level_panic   = 1,
-        report_level_error   = 2,
-        report_level_warning = 3,
-        report_level_message = 4,
-        report_level_success = 5,
-        report_level_debug   = 6,
-        report_level_trace   = 7,
+        _report_level_none    = 0,
+        _report_level_panic   = 1,
+        _report_level_error   = 2,
+        _report_level_warning = 3,
+        _report_level_message = 4,
+        _report_level_success = 5,
+        _report_level_debug   = 6,
+        _report_level_trace   = 7,
 
-        report_level_count = 8,
+        _report_level_count = 8,
     };
 
     enum Report_Guard : isize {
-        report_guard_false = 0,
-        report_guard_true  = 1,
+        _report_guard_false = 0,
+        _report_guard_true  = 1,
 
-        report_guard_count = 2,
+        _report_guard_count = 2,
     };
 
     struct Report {

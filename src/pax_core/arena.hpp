@@ -15,11 +15,11 @@
 namespace pax
 {
     enum Arena_Err : isize {
-        arena_err_none            = 0,
-        arena_err_request_too_big = 1,
-        arena_err_out_of_memory   = 2,
+        _arena_err_none            = 0,
+        _arena_err_request_too_big = 1,
+        _arena_err_out_of_memory   = 2,
 
-        arena_err_count = 3,
+        _arena_err_count = 3,
     };
 
     struct Arena_Res {
@@ -43,7 +43,7 @@ namespace pax
         Arena_Buff* list;
     };
 
-    extern const Array<s8, arena_err_count> ARENA_ERR_TITLE;
+    extern const Array<s8, _arena_err_count> ARENA_ERR_TITLE;
 
     byte*
     align_forw(byte* addr, isize align);
@@ -52,10 +52,10 @@ namespace pax
     arena_buff_from(byte* addr, isize size);
 
     byte*
-    arena_buff_request(Arena_Buff* buffer, isize width, isize align, isize count);
+    arena_buff_request(Arena_Buff* buff, isize width, isize align, isize count);
 
     void
-    arena_buff_release(Arena_Buff* buffer);
+    arena_buff_release(Arena_Buff* buff);
 
     Arena
     arena_init(isize size, Alloc alloc = base_alloc());

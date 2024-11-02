@@ -9,7 +9,7 @@ namespace pax
     //
     //
 
-    const Array<s8, write_err_count> WRITE_ERR_TITLE = {
+    const Array<s8, _write_err_count> WRITE_ERR_TITLE = {
         "write_err_none",
         "write_err_overflow",
     };

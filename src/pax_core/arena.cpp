@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 #include <pax_core/arena.hpp>
 #include <pax_core/report.hpp>
 #include <pax_core/buff.hpp>
@@ -10,7 +8,7 @@ namespace pax
     arena_attach(Arena* arena, isize size);
 
     Arena_Buff*
-    arena_detach(Arena* arena, Arena_Buff* buffer);
+    arena_detach(Arena* arena, Arena_Buff* buff);
 
     //
     //
@@ -18,7 +16,7 @@ namespace pax
     //
     //
 
-    const Array<s8, arena_err_count> ARENA_ERR_TITLE = {
+    const Array<s8, _arena_err_count> ARENA_ERR_TITLE = {
         "arena_err_none",
         "arena_err_request_too_big",
         "arena_err_out_of_memory",
@@ -31,12 +29,10 @@ namespace pax
         pax_guard(align > 0 && (align & (align - 1)) == 0,
             "`align` is not a power of two");
 
-        usize value = (usize) addr;
-        usize negat = ~value + 1;
+        isize temp = (isize) addr;
+        isize mask = align - 1;
 
-        align = align - 1;
-
-        return addr + (negat & align);
+        return addr + (-temp & mask);
     }
 
     Arena_Buff
@@ -45,9 +41,10 @@ namespace pax
         pax_trace();
         pax_guard(size >= 0, "`size` is negative");
 
-        auto self = Arena_Buff {0};
+        Arena_Buff self = {0};
 
-        if ( addr == 0 ) return self;
+        if ( addr == 0 || size == 0 )
+            return self;
 
         self.head = addr;
         self.tail = addr + size;
@@ -57,13 +54,13 @@ namespace pax
     }
 
     byte*
-    arena_buff_request(Arena_Buff* buffer, isize width, isize align, isize count)
+    arena_buff_request(Arena_Buff* buff, isize width, isize align, isize count)
     {
         pax_trace();
-        pax_guard(buffer != 0, "`buffer` is null");
-        pax_guard(width   > 0, "`width` isn't positive");
+        pax_guard(buff  != 0, "`buff` is null");
+        pax_guard(width  > 0, "`width` isn't positive");
 
-        auto& self = *buffer;
+        auto& self = *buff;
         byte* addr = align_forw(self.curr, align);
         usize temp = (usize) addr;
 
@@ -76,9 +73,9 @@ namespace pax
 
         if ( 0 < count && count <= limit ) {
             isize size = width * count;
-            auto  buff = buff_from(addr, size);
+            auto  bufr = buff_from(addr, size);
 
-            buff_fill_byte(&buff, 0);
+            buff_fill_byte(&bufr, 0);
 
             self.curr = addr + size;
 
@@ -89,12 +86,12 @@ namespace pax
     }
 
     void
-    arena_buff_release(Arena_Buff* buffer)
+    arena_buff_release(Arena_Buff* buff)
     {
         pax_trace();
-        pax_guard(buffer != 0, "`buffer` is null");
+        pax_guard(buff != 0, "`buff` is null");
 
-        auto& self = *buffer;
+        auto& self = *buff;
 
         self.curr = self.head;
     }
@@ -105,7 +102,7 @@ namespace pax
         pax_trace();
         pax_guard(size >= 0, "`size` is negative");
 
-        auto self = Arena {0};
+        Arena self = {0};
 
         self.size  = size;
         self.alloc = alloc;
@@ -139,7 +136,7 @@ namespace pax
         byte* addr = 0;
 
         if ( width * count > self.size )
-            return {0, 0, 0, 0, arena_err_request_too_big};
+            return {0, 0, 0, 0, _arena_err_request_too_big};
 
         if ( self.list == 0 )
             self.list = arena_attach(arena, self.size);
@@ -148,7 +145,7 @@ namespace pax
 
         while ( addr == 0 ) {
             if ( node == 0 )
-                return {0, 0, 0, 0, arena_err_out_of_memory};
+                return {0, 0, 0, 0, _arena_err_out_of_memory};
 
             addr = arena_buff_request(node,
                 width, align, count);
@@ -159,7 +156,7 @@ namespace pax
             node = node->next;
         }
 
-        return {width, align, count, addr, arena_err_none};
+        return {width, align, count, addr, _arena_err_none};
     }
 
     void
@@ -190,7 +187,7 @@ namespace pax
         self.alloc = alloc;
 
         return temp;
-    }    
+    }
 
     //
     //
@@ -201,7 +198,7 @@ namespace pax
     // todo (trakot02):
     //
     // Allocate the smallest power of two bigger than size:
-    // 
+    //
     // 1. No fragmentation;
     // 2. Bigger than size;
     // 3. Extra room for WIDTH_BUFF.
@@ -235,7 +232,7 @@ namespace pax
     }
 
     Arena_Buff*
-    arena_detach(Arena* arena, Arena_Buff* buffer)
+    arena_detach(Arena* arena, Arena_Buff* buff)
     {
         static const isize WIDTH_BUFF =
             pax_type_width(Arena_Buff);
@@ -244,8 +241,8 @@ namespace pax
         pax_guard(arena != 0, "`arena` is null");
 
         auto& self = *arena;
-        auto* node = buffer;
-        auto* next = buffer;
+        auto* node = buff;
+        auto* next = buff;
 
         if ( node != 0 ) {
             isize size = node->tail - node->head;

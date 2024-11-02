@@ -1,27 +1,9 @@
 #ifndef PAX_CORE_DEBUG_HPP
 #define PAX_CORE_DEBUG_HPP
 
-#if defined(_WIN32)
+#include <pax_core/system.hpp>
 
-    #define PAX_SYSTEM_WINDOWS
-
-#elif defined(__linux__)
-
-    #define PAX_SYSTEM_LINUX
-    #define PAX_SYSTEM_POSIX
-
-#elif defined(__unix__)
-
-    #define PAX_SYSTEM_UNIX
-    #define PAX_SYSTEM_POSIX
-
-#else
-
-    #define PAX_SYSTEM_UNKNOWN
-
-#endif
-
-#if defined(_MSC_VER)
+#if defined(PAX_COMPILER_MS)
 
     #define pax_debug_break() \
         __debugbreak()

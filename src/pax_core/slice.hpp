@@ -46,10 +46,6 @@ namespace pax
     slice_from(Array<Type, Size>& value);
 
     template <class Type>
-    Slice<Type>
-    slice_init();
-
-    template <class Type>
     void
     slice_empty(Slice<Type>* slice);
 
@@ -128,7 +124,7 @@ namespace pax
     {
         pax_trace();
 
-        auto self = Slice<Type> {0};
+        Slice<Type> self = {0};
 
         self.addr  = value.addr;
         self.size  = value.size;
@@ -143,7 +139,7 @@ namespace pax
     {
         pax_trace();
 
-        auto self = Slice<const Type> {0};
+        Slice<const Type> self = {0};
 
         self.addr  = value.addr;
         self.size  = value.size;
@@ -158,22 +154,11 @@ namespace pax
     {
         pax_trace();
 
-        auto self = Slice<Type> {0};
+        Slice<Type> self = {0};
 
         self.addr  = value.addr;
         self.size  = value.size;
         self.limit = value.size;
-
-        return self;
-    }
-
-    template <class Type>
-    Slice<Type>
-    slice_init()
-    {
-        pax_trace();
-
-        auto self = Slice<Type> {0};
 
         return self;
     }
@@ -233,7 +218,7 @@ namespace pax
         auto resl = arena_request(arena,
             WIDTH_TYPE, ALIGN_TYPE, self.size + delta);
 
-        if ( resl.error != arena_err_none )
+        if ( resl.error != _arena_err_none )
             pax_warning(ARENA_ERR_TITLE[resl.error]);
 
         isize size = resl.width * resl.count;
@@ -271,8 +256,8 @@ namespace pax
                        (size  < next) * next;
             }
 
-            copy = slice_resize(
-                slice, arena, size - self.size);
+            copy = slice_resize(slice, arena,
+                size - self.size);
 
             if ( copy.limit < size ) return self;
         }
@@ -313,8 +298,8 @@ namespace pax
                        (size  < next) * next;
             }
 
-            copy = slice_resize(
-                slice, arena, size - self.size);
+            copy = slice_resize(slice, arena,
+                size - self.size);
 
             if ( copy.limit < size ) return self;
         }

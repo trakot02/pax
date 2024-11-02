@@ -5,10 +5,11 @@ using namespace pax;
 int
 main(int argc, char* argv[])
 {
-    REPORT_LEVEL = report_level_trace;
+    REPORT_LEVEL = _report_level_trace;
+    REPORT_GUARD = _report_guard_false;
 
-    auto text  = s8 {"Prova"};
-    auto array = Array<byte, 2> {};
+    s8             text  = "Prova";
+    Array<byte, 2> array = {};
 
     for ( isize i = 0; i < text.size; i += 1 )
         array[i] = text[i];
