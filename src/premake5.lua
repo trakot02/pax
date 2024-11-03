@@ -28,9 +28,6 @@ project "pax_core"
         "pax_core/export.hpp",
     }
 
-    -- filter { "system:windows" }
-    --     defines { "_CTR_SECURE_NO_WARNINGS" }
-
     filter { "configurations:debug" }
         symbols "on"
 

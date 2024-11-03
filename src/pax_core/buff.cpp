@@ -5,28 +5,34 @@
 namespace pax
 {
     Write_Res
-    ifc_buff_write_byte(void* buff, byte value, isize count);
+    impl_buff_write_byte(void* buff, byte value, isize count);
 
     Write_Res
-    ifc_buff_write_buff(void* buff, Buff* value);
+    impl_buff_write_buff(void* buff, Buff* value);
 
     Write_Res
-    ifc_buff_write_s8(void* buff, s8 value);
+    impl_buff_write_s8(void* buff, s8 value);
 
     Write_Res
-    ifc_buff_write_u64(void* buff, u64 value, Write_Radix radix);
+    impl_buff_write_u64(void* buff, u64 value, Write_Radix radix);
 
     Write_Res
-    ifc_buff_write_i64(void* buff, i64 value, Write_Radix radix);
+    impl_buff_write_i64(void* buff, i64 value, Write_Radix radix);
 
     Write_Res
-    ifc_buff_write_addr(void* buff, void* value);
+    impl_buff_write_addr(void* buff, void* value);
 
     Read_Res
-    ifc_buff_read_s8(void* buff, s8* value, byte delim);
+    impl_buff_read_buff(void* buff, Buff* value, byte delim);
 
     Read_Res
-    ifc_buff_read_u64(void* buff, u64* value, Read_Radix radix);
+    impl_buff_read_s8(void* buff, s8* value, byte delim);
+
+    Read_Res
+    impl_buff_read_u64(void* buff, u64* value, Read_Radix radix);
+
+    Read_Res
+    impl_buff_read_i64(void* buff, i64* value, Read_Radix radix);
 
     //
     //
@@ -218,31 +224,6 @@ namespace pax
     }
 
     Write_Res
-    buff_rwrite_buff(Buff* buff, Buff* value)
-    {
-        pax_trace();
-        pax_guard(buff  != 0, "`buff` is null");
-        pax_guard(value != 0, "`value` is null");
-
-        auto& self  = *buff;
-        auto& other = *value;
-        byte* addr  = self.curr;
-        isize avail = self.tail - self.curr;
-        isize count = other.curr - other.head;
-
-        if ( count > avail )
-            return {0, _write_err_overflow};
-
-        for ( isize i = 0; i < count; i += 1 )
-            addr[i] = other.head[count - i - 1];
-
-        self.curr  += count;
-        other.curr  = other.head;
-
-        return {count, _write_err_none};
-    }
-
-    Write_Res
     buff_write_s8(Buff* buff, s8 value)
     {
         pax_trace();
@@ -258,28 +239,6 @@ namespace pax
 
         for ( isize i = 0; i < count; i += 1 )
             addr[i] = value[i];
-
-        self.curr += count;
-
-        return {count, _write_err_none};
-    }
-
-    Write_Res
-    buff_rwrite_s8(Buff* buff, s8 value)
-    {
-        pax_trace();
-        pax_guard(buff != 0, "`buff` is null");
-
-        auto& self  = *buff;
-        byte* addr  = self.curr;
-        isize avail = self.tail - self.curr;
-        isize count = value.size;
-
-        if ( count > avail )
-            return {0, _write_err_overflow};
-
-        for ( isize i = 0; i < count; i += 1 )
-            addr[i] = value[count - i - 1];
 
         self.curr += count;
 
@@ -412,6 +371,40 @@ namespace pax
     }
 
     Read_Res
+    buff_read_buff(Buff* buff, Buff* value, byte delim)
+    {
+        pax_trace();
+        pax_guard(buff != 0, "`buff` is null");
+
+        auto& self  = *buff;
+        auto& other = *value;
+        byte* addr  = self.curr;
+        isize avail = self.tail - self.curr;
+        isize space = other.tail - other.curr;
+        isize count = 0;
+
+        while ( count < avail ) {
+            if ( count > space - 1 )
+                return {space, _read_err_overflow};
+
+           if ( addr[count] == delim ) break;
+
+            count += 1;
+        }
+
+        for ( isize i = 0; i < count; i += 1 )
+            other.curr[i] = addr[i];
+
+        if ( addr[count] == delim )
+            count += 1;
+
+        self.curr  += count;
+        other.curr += count;
+
+        return {count, _read_err_none};
+    }
+
+    Read_Res
     buff_read_s8(Buff* buff, s8* value, byte delim)
     {
         pax_trace();
@@ -459,33 +452,41 @@ namespace pax
         byte* addr  = self.curr;
         isize avail = self.tail - self.curr;
         isize count = 0;
+        isize delta = 0;
         u64   other = 0;
         auto  error = _read_err_none;
 
-        if ( avail != 0 && self.curr[count] == '+' )
-            count += 1;
+        if ( avail <= 0 ) return {0, _read_err_syntax};
+
+        if ( addr[count] == '+' ) count += 1;
+
+        if ( prefix.size >= avail - count )
+            return {avail, _read_err_syntax};
 
         for ( isize i = 0; i < prefix.size; i += 1 ) {
-            if ( count + i > avail )
-                return {avail, _read_err_format};
-
             if ( addr[i + count] != prefix[i] )
-                return {count + i, _read_err_format};
+                return {count + i, _read_err_syntax};
         }
 
         count += prefix.size;
+        delta  = count;
 
         while ( count < avail ) {
-            byte index = self.curr[count];
-            i8   digit = -1;
+            byte index = addr[count];
+            i8   digit = MIN_BYTE;
 
-            if ( index >=  0 ) digit = values[index];
-            if ( digit == -1 ) break;
+            if ( index >= 0 ) digit = values[index];
 
-            if ( digit == -2 )
-                return {count, _read_err_format};
+            if ( digit < 0 ) {
+                if ( digit == -2 || count == delta )
+                    return {count + 1, _read_err_syntax};
 
-            if ( other <= (MAX_U64 - digit) / digits.size )
+                break;
+            }
+
+            u64 limit = MAX_U64 - digit;
+
+            if ( other <= limit / digits.size )
                 other = other * digits.size + digit;
             else
                 error = _read_err_overflow;
@@ -497,6 +498,82 @@ namespace pax
             return {count, error};
 
         if ( value != 0 ) *value = other;
+
+        self.curr += count;
+
+        return {count, _read_err_none};
+    }
+
+    Read_Res
+    buff_read_i64(Buff* buff, i64* value, Read_Radix radix)
+    {
+        pax_trace();
+        pax_guard(buff != 0, "`buff` is null");
+
+        pax_guard(0 <= radix && radix < _read_radix_count,
+            "`radix` is not a valid option");
+
+        auto& digits = DIGITS_ARRAY[radix];
+        auto& prefix = PREFIX_ARRAY[radix];
+        auto& values = VALUES_ARRAY[radix];
+
+        auto& self  = *buff;
+        byte* addr  = self.curr;
+        isize avail = self.tail - self.curr;
+        isize count = 0;
+        isize delta = 0;
+        u64   other = 0;
+        u64   extra = 0;
+        auto  error = _read_err_none;
+
+        if ( avail <= 0 ) return {0, _read_err_syntax};
+
+        extra = (addr[count] == '-');
+
+        if ( addr[count] == '-' || addr[count] == '+' )
+            count += 1;
+
+        if ( prefix.size >= avail - count )
+            return {avail, _read_err_syntax};
+
+        for ( isize i = 0; i < prefix.size; i += 1 ) {
+            if ( addr[i + count] != prefix[i] )
+                return {count + i, _read_err_syntax};
+        }
+
+        count += prefix.size;
+        delta  = count;
+
+        while ( count < avail ) {
+            byte index = addr[count];
+            i8   digit = MIN_BYTE;
+
+            if ( index >= 0 ) digit = values[index];
+
+            if ( digit < 0 ) {
+                if ( digit == -2 || count == delta )
+                    return {count + 1, _read_err_syntax};
+
+                break;
+            }
+
+            u64 limit = MAX_I64 + extra - digit;
+
+            if ( other <= limit / digits.size )
+                other = other * digits.size + digit;
+            else
+                error = _read_err_overflow;
+
+            count += 1;
+        }
+
+        if ( error != _read_err_none )
+            return {count, error};
+
+        if ( value != 0 ) {
+            *value = (extra == 0) * other -
+                     (extra == 1) * other;
+        }
 
         self.curr += count;
 
@@ -571,12 +648,12 @@ namespace pax
 
         Write self = {0};
 
-        self.byte_func = &ifc_buff_write_byte;
-        self.buff_func = &ifc_buff_write_buff;
-        self.s8_func   = &ifc_buff_write_s8;
-        self.u64_func  = &ifc_buff_write_u64;
-        self.i64_func  = &ifc_buff_write_i64;
-        self.addr_func = &ifc_buff_write_addr;
+        self.byte_func = &impl_buff_write_byte;
+        self.buff_func = &impl_buff_write_buff;
+        self.s8_func   = &impl_buff_write_s8;
+        self.u64_func  = &impl_buff_write_u64;
+        self.i64_func  = &impl_buff_write_i64;
+        self.addr_func = &impl_buff_write_addr;
         self.self      = buff;
 
         return self;
@@ -589,9 +666,11 @@ namespace pax
 
         Read self = {0};
 
-        self.s8_func  = &ifc_buff_read_s8;
-        self.u64_func = &ifc_buff_read_u64;
-        self.self     = buff;
+        self.buff_func = &impl_buff_read_buff;
+        self.s8_func   = &impl_buff_read_s8;
+        self.u64_func  = &impl_buff_read_u64;
+        self.i64_func  = &impl_buff_read_i64;
+        self.self      = buff;
 
         return self;
     }
@@ -603,50 +682,62 @@ namespace pax
     //
 
     Write_Res
-    ifc_buff_write_byte(void* buff, byte value, isize count)
+    impl_buff_write_byte(void* buff, byte value, isize count)
     {
         return buff_write_byte((Buff*) buff, value, count);
     }
 
     Write_Res
-    ifc_buff_write_buff(void* buff, Buff* value)
+    impl_buff_write_buff(void* buff, Buff* value)
     {
         return buff_write_buff((Buff*) buff, value);
     }
 
     Write_Res
-    ifc_buff_write_s8(void* buff, s8 value)
+    impl_buff_write_s8(void* buff, s8 value)
     {
         return buff_write_s8((Buff*) buff, value);
     }
 
     Write_Res
-    ifc_buff_write_u64(void* buff, u64 value, Write_Radix radix)
+    impl_buff_write_u64(void* buff, u64 value, Write_Radix radix)
     {
         return buff_write_u64((Buff*) buff, value, radix);
     }
 
     Write_Res
-    ifc_buff_write_i64(void* buff, i64 value, Write_Radix radix)
+    impl_buff_write_i64(void* buff, i64 value, Write_Radix radix)
     {
         return buff_write_i64((Buff*) buff, value, radix);
     }
 
     Write_Res
-    ifc_buff_write_addr(void* buff, void* value)
+    impl_buff_write_addr(void* buff, void* value)
     {
         return buff_write_addr((Buff*) buff, value);
     }
 
     Read_Res
-    ifc_buff_read_s8(void* buff, s8* value, byte delim)
+    impl_buff_read_buff(void* buff, Buff* value, byte delim)
+    {
+        return buff_read_buff((Buff*) buff, value, delim);
+    }
+
+    Read_Res
+    impl_buff_read_s8(void* buff, s8* value, byte delim)
     {
         return buff_read_s8((Buff*) buff, value, delim);
     }
 
     Read_Res
-    ifc_buff_read_u64(void* buff, u64* value, Read_Radix radix)
+    impl_buff_read_u64(void* buff, u64* value, Read_Radix radix)
     {
         return buff_read_u64((Buff*) buff, value, radix);
+    }
+
+    Read_Res
+    impl_buff_read_i64(void* buff, i64* value, Read_Radix radix)
+    {
+        return buff_read_i64((Buff*) buff, value, radix);
     }
 } // namespace pax

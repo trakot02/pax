@@ -1,4 +1,4 @@
 return {
-	"_preload.lua",
-	"ecc.lua"
+    "_preload.lua",
+    "ecc.lua"
 }

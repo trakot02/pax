@@ -3,11 +3,6 @@
 
 #include <stdint.h>
 
-// todo (trakot02):
-//
-// Remove after file handling system.
-#include <stdio.h>
-
 #define pax_type_width \
     (isize) sizeof
 

@@ -6,10 +6,10 @@
 namespace pax
 {
     byte*
-    ifc_base_request(void* self, isize width, isize align, isize count);
+    impl_base_request(void* self, isize width, isize align, isize count);
 
     void
-    ifc_base_release(void* self, byte* addr, isize size);
+    impl_base_release(void* self, byte* addr, isize size);
 
     //
     //
@@ -52,8 +52,8 @@ namespace pax
 
         Alloc self = {0};
 
-        self.request_func = &ifc_base_request;
-        self.release_func = &ifc_base_release;
+        self.request_func = &impl_base_request;
+        self.release_func = &impl_base_release;
 
         return self;
     }
@@ -65,7 +65,7 @@ namespace pax
     //
 
     byte*
-    ifc_base_request(void* self, isize width, isize align, isize count)
+    impl_base_request(void* self, isize width, isize align, isize count)
     {
         pax_trace();
         pax_guard(self  == 0, "`self` isn't null");
@@ -86,7 +86,7 @@ namespace pax
     }
 
     void
-    ifc_base_release(void* self, byte* addr, isize size)
+    impl_base_release(void* self, byte* addr, isize size)
     {
         pax_trace();
         pax_guard(self == 0, "`self` isn't null");

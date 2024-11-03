@@ -40,13 +40,7 @@ namespace pax
     buff_write_buff(Buff* buff, Buff* value);
 
     Write_Res
-    buff_rwrite_buff(Buff* buff, Buff* value);
-
-    Write_Res
     buff_write_s8(Buff* buff, s8 value);
-
-    Write_Res
-    buff_rwrite_s8(Buff* buff, s8 value);
 
     Write_Res
     buff_write_u64(Buff* buff, u64 value, Write_Radix radix = _write_radix_dec);
@@ -58,10 +52,16 @@ namespace pax
     buff_write_addr(Buff* buff, void* value);
 
     Read_Res
+    buff_read_buff(Buff* buff, Buff* value, byte delim);
+
+    Read_Res
     buff_read_s8(Buff* buff, s8* value, byte delim);
 
     Read_Res
     buff_read_u64(Buff* buff, u64* value, Read_Radix radix = _read_radix_dec);
+
+    Read_Res
+    buff_read_i64(Buff* buff, i64* value, Read_Radix radix = _read_radix_dec);
 
     void
     buff_move(Buff* buff, Buff_End end);
