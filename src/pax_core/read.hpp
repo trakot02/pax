@@ -6,59 +6,47 @@
 
 namespace pax
 {
-    struct Buff;
-
     enum Read_Err : isize {
-        _read_err_none     = 0,
-        _read_err_overflow = 1,
-        _read_err_syntax   = 2,
+        READ_ERR_NONE     = 0,
+        READ_ERR_OVERFLOW = 1,
+        READ_ERR_SYNTAX   = 2,
+        READ_ERR_SYSTEM   = 3,
 
-        _read_err_count = 3,
-    };
-
-    enum Read_Radix : isize {
-        _read_radix_dec = 0,
-        _read_radix_hex = 1,
-        _read_radix_bin = 2,
-        _read_radix_oct = 3,
-
-        _read_radix_count = 4,
+        READ_ERR_COUNT = 4,
     };
 
     struct Read_Res {
         isize    bytes;
         Read_Err error;
+        isize    system;
     };
 
     struct Read {
-        Read_Res (*buff_func)
-            (void* self, Buff* value, byte delim);
+        Read_Res (*byte_func) (
+            void* self, byte* value
+        ) = 0;
 
-        Read_Res (*s8_func)
-            (void* self, s8* value, byte delim);
+        Read_Res (*buff_func) (
+            void* self, Buff* value
+        ) = 0;
 
-        Read_Res (*u64_func)
-            (void* self, u64* value, Read_Radix radix);
+        void (*close_func) (
+            void* self
+        ) = 0;
 
-        Read_Res (*i64_func)
-            (void* self, i64* value, Read_Radix radix);
-
-        void* self;
+        void* self = 0;
     };
 
-    extern const Array<s8, _read_err_count> READ_ERR_TITLE;
+    extern const Array<s8, READ_ERR_COUNT> READ_ERR_TITLE;
 
     Read_Res
-    read_buff(const Read* read, Buff* value, byte delim);
+    read_byte(const Read* read, byte* value);
 
     Read_Res
-    read_s8(const Read* read, s8* value, byte delim);
+    read_buff(const Read* read, Buff* value);
 
-    Read_Res
-    read_u64(const Read* read, u64* value, Read_Radix radix = _read_radix_dec);
-
-    Read_Res
-    read_i64(const Read* read, i64* value, Read_Radix radix = _read_radix_dec);
+    void
+    read_close(const Read* read);
 } // namespace pax
 
 #endif // PAX_CORE_READ_HPP

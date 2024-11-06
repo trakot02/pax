@@ -1,12 +1,8 @@
 #include <pax_core/report.hpp>
+#include <pax_core/buff.hpp>
+#include <pax_core/file.hpp>
 
 #include <signal.h>
-
-// todo (trakot02):
-//
-// Use the custom implementation for writing
-// to files.
-#include <stdio.h>
 
 namespace pax
 {
@@ -16,163 +12,181 @@ namespace pax
     //
     //
 
-    const Report_Level REPORT_LEVEL_BASE = _report_level_success;
-    const Report_Guard REPORT_GUARD_BASE = _report_guard_true;
+    static Array<byte, 1024> temp = {};
+
+    static Buff buff = buff_from_addr(temp.addr, temp.size);
+
+    const Report_Level REPORT_LEVEL_BASE = REPORT_LEVEL_SUCCESS;
+    const Report_Panic REPORT_PANIC_BASE = REPORT_PANIC_TRUE;
+    const Report_Guard REPORT_GUARD_BASE = REPORT_GUARD_TRUE;
 
     Report_Level REPORT_LEVEL = REPORT_LEVEL_BASE;
+    Report_Panic REPORT_PANIC = REPORT_PANIC_BASE;
     Report_Guard REPORT_GUARD = REPORT_GUARD_BASE;
 
     void
-    report_panic(Report report)
+    report_fatal(Report report)
     {
-        if ( REPORT_LEVEL < _report_level_panic )
-            return;
+        if ( REPORT_LEVEL < REPORT_LEVEL_FATAL ) return;
 
-        auto text = report.text;
-        auto func = report.func;
-        auto file = report.file;
-        auto line = report.line;
+        buff_clear(&buff);
+        buff_write_s8(&buff, "\x1b[35m[FATAL]\x1b[0m from ");
+        buff_write_s8(&buff, report.func);
+        buff_write_s8(&buff, " at {");
+        buff_write_s8(&buff, report.file);
+        buff_write_s8(&buff, ", ");
+        buff_write_u64(&buff, report.line);
+        buff_write_s8(&buff, "}:\n");
+        buff_write_s8(&buff, "\x1b[35m[FATAL]\x1b[0m     '");
+        buff_write_s8(&buff, report.text);
+        buff_write_s8(&buff, "'.\n");
 
-        fprintf(stderr,
-            "\x1b[35m[PANIC]\x1b[0m from %.*s at {%.*s, %li}:\n"
-            "\x1b[35m[PANIC]\x1b[0m     %.*s.\n",
-            (int) func.size, func.addr,
-            (int) file.size, file.addr, line,
-            (int) text.size, text.addr);
-
-        raise(SIGABRT);
+        stderr_write_buff(&buff);
     }
 
     void
     report_error(Report report)
     {
-        if ( REPORT_LEVEL < _report_level_error )
-            return;
+        if ( REPORT_LEVEL < REPORT_LEVEL_ERROR ) return;
 
-        auto text = report.text;
-        auto func = report.func;
-        auto file = report.file;
-        auto line = report.line;
+        buff_clear(&buff);
+        buff_write_s8(&buff, "\x1b[31m[ERROR]\x1b[0m from ");
+        buff_write_s8(&buff, report.func);
+        buff_write_s8(&buff, " at {");
+        buff_write_s8(&buff, report.file);
+        buff_write_s8(&buff, ", ");
+        buff_write_u64(&buff, report.line);
+        buff_write_s8(&buff, "}:\n");
+        buff_write_s8(&buff, "\x1b[31m[ERROR]\x1b[0m     '");
+        buff_write_s8(&buff, report.text);
+        buff_write_s8(&buff, "'.\n");
 
-        fprintf(stderr,
-            "\x1b[31m[ERROR]\x1b[0m from %.*s at {%.*s, %li}:\n"
-            "\x1b[31m[ERROR]\x1b[0m     %.*s.\n",
-            (int) func.size, func.addr,
-            (int) file.size, file.addr, line,
-            (int) text.size, text.addr);
+        stderr_write_buff(&buff);
     }
 
     void
     report_warning(Report report)
     {
-        if ( REPORT_LEVEL < _report_level_warning )
-            return;
+        if ( REPORT_LEVEL < REPORT_LEVEL_WARNING ) return;
 
-        auto text = report.text;
-        auto func = report.func;
-        auto file = report.file;
-        auto line = report.line;
+        buff_clear(&buff);
+        buff_write_s8(&buff, "\x1b[33m[WARNING]\x1b[0m from ");
+        buff_write_s8(&buff, report.func);
+        buff_write_s8(&buff, " at {");
+        buff_write_s8(&buff, report.file);
+        buff_write_s8(&buff, ", ");
+        buff_write_u64(&buff, report.line);
+        buff_write_s8(&buff, "}:\n");
+        buff_write_s8(&buff, "\x1b[33m[WARNING]\x1b[0m     '");
+        buff_write_s8(&buff, report.text);
+        buff_write_s8(&buff, "'.\n");
 
-        fprintf(stderr,
-            "\x1b[33m[WARNING]\x1b[0m from %.*s at {%.*s, %li}:\n"
-            "\x1b[33m[WARNING]\x1b[0m     %.*s.\n",
-            (int) func.size, func.addr,
-            (int) file.size, file.addr, line,
-            (int) text.size, text.addr);
+        stderr_write_buff(&buff);
     }
 
     void
     report_message(Report report)
     {
-        if ( REPORT_LEVEL < _report_level_message )
-            return;
+        if ( REPORT_LEVEL < REPORT_LEVEL_MESSAGE ) return;
 
-        auto text = report.text;
-        auto func = report.func;
-        auto file = report.file;
-        auto line = report.line;
+        buff_clear(&buff);
+        buff_write_s8(&buff, "[MESSAGE] from ");
+        buff_write_s8(&buff, report.func);
+        buff_write_s8(&buff, " at {");
+        buff_write_s8(&buff, report.file);
+        buff_write_s8(&buff, ", ");
+        buff_write_u64(&buff, report.line);
+        buff_write_s8(&buff, "}:\n");
+        buff_write_s8(&buff, "[MESSAGE]     '");
+        buff_write_s8(&buff, report.text);
+        buff_write_s8(&buff, "'.\n");
 
-        fprintf(stderr,
-            "[MESSAGE] from %.*s at {%.*s, %li}:\n"
-            "[MESSAGE]     %.*s.\n",
-            (int) func.size, func.addr,
-            (int) file.size, file.addr, line,
-            (int) text.size, text.addr);
+        stderr_write_buff(&buff);
     }
 
     void
     report_success(Report report)
     {
-        if ( REPORT_LEVEL < _report_level_success )
-            return;
+        if ( REPORT_LEVEL < REPORT_LEVEL_SUCCESS ) return;
 
-        auto text = report.text;
-        auto func = report.func;
-        auto file = report.file;
-        auto line = report.line;
+        buff_clear(&buff);
+        buff_write_s8(&buff, "\x1b[32m[SUCCESS]\x1b[0m from ");
+        buff_write_s8(&buff, report.func);
+        buff_write_s8(&buff, " at {");
+        buff_write_s8(&buff, report.file);
+        buff_write_s8(&buff, ", ");
+        buff_write_u64(&buff, report.line);
+        buff_write_s8(&buff, "}:\n");
+        buff_write_s8(&buff, "\x1b[32m[SUCCESS]\x1b[0m     '");
+        buff_write_s8(&buff, report.text);
+        buff_write_s8(&buff, "'.\n");
 
-        fprintf(stderr,
-            "\x1b[32m[SUCCESS]\x1b[0m from %.*s at {%.*s, %li}:\n"
-            "\x1b[32m[SUCCESS]\x1b[0m     %.*s.\n",
-            (int) func.size, func.addr,
-            (int) file.size, file.addr, line,
-            (int) text.size, text.addr);
+        stderr_write_buff(&buff);
     }
 
     void
     report_debug(Report report)
     {
-        if ( REPORT_LEVEL < _report_level_debug )
-            return;
+        if ( REPORT_LEVEL < REPORT_LEVEL_DEBUG ) return;
 
-        auto text = report.text;
-        auto func = report.func;
-        auto file = report.file;
-        auto line = report.line;
+        buff_clear(&buff);
+        buff_write_s8(&buff, "\x1b[34m[DEBUG]\x1b[0m from ");
+        buff_write_s8(&buff, report.func);
+        buff_write_s8(&buff, " at {");
+        buff_write_s8(&buff, report.file);
+        buff_write_s8(&buff, ", ");
+        buff_write_u64(&buff, report.line);
+        buff_write_s8(&buff, "}:\n");
+        buff_write_s8(&buff, "\x1b[34m[DEBUG]\x1b[0m     '");
+        buff_write_s8(&buff, report.text);
+        buff_write_s8(&buff, "'.\n");
 
-        fprintf(stderr,
-            "\x1b[36m[DEBUG]\x1b[0m from %.*s at {%.*s, %li}:\n"
-            "\x1b[36m[DEBUG]\x1b[0m     %.*s.\n",
-            (int) func.size, func.addr,
-            (int) file.size, file.addr, line,
-            (int) text.size, text.addr);
+        stderr_write_buff(&buff);
     }
 
     void
-    report_trace(Report report)
+    report_panic(Report report)
     {
-        if ( REPORT_LEVEL < _report_level_trace )
-            return;
+        if ( REPORT_PANIC != REPORT_PANIC_TRUE ) return;
 
-        auto func = report.func;
-        auto file = report.file;
-        auto line = report.line;
+        buff_clear(&buff);
+        buff_write_s8(&buff, "\x1b[35m[PANIC]\x1b[0m from ");
+        buff_write_s8(&buff, report.func);
+        buff_write_s8(&buff, " at {");
+        buff_write_s8(&buff, report.file);
+        buff_write_s8(&buff, ", ");
+        buff_write_u64(&buff, report.line);
+        buff_write_s8(&buff, "}:\n");
+        buff_write_s8(&buff, "\x1b[35m[PANIC]\x1b[0m     '");
+        buff_write_s8(&buff, report.text);
+        buff_write_s8(&buff, "'.\n");
 
-        fprintf(stderr,
-            "\x1b[34m[TRACE]\x1b[0m from %.*s at {%.*s, %li}\n",
-            (int) func.size, func.addr,
-            (int) file.size, file.addr, line);
+        stderr_write_buff(&buff);
+
+        raise(SIGABRT);
     }
 
     void
     report_guard(s8 expr, Report report)
     {
-        if ( REPORT_GUARD != _report_guard_true )
-            return;
+        if ( REPORT_GUARD != REPORT_GUARD_TRUE ) return;
 
-        auto text = report.text;
-        auto func = report.func;
-        auto file = report.file;
-        auto line = report.line;
+        buff_clear(&buff);
+        buff_write_s8(&buff, "\x1b[35m[GUARD]\x1b[0m from ");
+        buff_write_s8(&buff, report.func);
+        buff_write_s8(&buff, " at {");
+        buff_write_s8(&buff, report.file);
+        buff_write_s8(&buff, ", ");
+        buff_write_u64(&buff, report.line);
+        buff_write_s8(&buff, "}:\n");
+        buff_write_s8(&buff, "\x1b[35m[GUARD]\x1b[0m     guard '");
+        buff_write_s8(&buff, expr);
+        buff_write_s8(&buff, "' failed.\n");
+        buff_write_s8(&buff, "\x1b[35m[GUARD]\x1b[0m\n");
+        buff_write_s8(&buff, "\x1b[35m[GUARD]\x1b[0m '");
+        buff_write_s8(&buff, report.text);
+        buff_write_s8(&buff, "'.\n");
 
-        fprintf(stderr,
-            "\x1b[35m[GUARD]\x1b[0m from %.*s at {%.*s, %li}:\n"
-            "\x1b[35m[GUARD]\x1b[0m     guard '%.*s' failed.\n"
-            "\x1b[35m[GUARD]\x1b[0m\n"
-            "\x1b[35m[GUARD]\x1b[0m %.*s.\n",
-            (int) func.size, func.addr,
-            (int) file.size, file.addr, line,
-            (int) expr.size, expr.addr,
-            (int) text.size, text.addr);
+        stderr_write_buff(&buff);
     }
 } // namespace pax

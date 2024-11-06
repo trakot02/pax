@@ -16,9 +16,9 @@ namespace pax
         //
         //
 
-        Type* addr;
-        isize size;
-        isize limit;
+        Type* addr  = 0;
+        isize size  = 0;
+        isize limit = 0;
 
         //
         //
@@ -47,28 +47,28 @@ namespace pax
 
     template <class Type>
     void
-    slice_empty(Slice<Type>* slice);
+    slice_clear(Slice<Type>* slice);
 
     template <class Type>
     void
     slice_fill(Slice<Type>* slice, const Type& value);
+/*
+    template <class Type>
+    Slice<Type>
+    slice_copy(Slice<Type>* slice, Arena* arena, isize delta);
 
     template <class Type>
     Slice<Type>
-    slice_resize(Slice<Type>* slice, Arena* arena, isize delta);
-
-    template <class Type>
-    Slice<Type>
-    slice_insert_value(Slice<Type>* slice, Arena* arena, isize index, const Type& value, isize count = 1);
+    slice_insert_val(Slice<Type>* slice, Arena* arena, isize index, const Type& value, isize count = 1);
 
     template <class Type, isize Size>
     Slice<Type>
-    slice_insert_array(Slice<Type>* slice, Arena* arena, isize index, const Array<Type, Size>& value);
+    slice_insert_arr(Slice<Type>* slice, Arena* arena, isize index, const Array<Type, Size>& value);
 
     template <class Type>
     Slice<Type>
     slice_insert(Slice<Type>* slice, Arena* arena, isize index, const Slice<Type>* value);
-/*
+  
     template <class Type>
     void
     slice_remove(Slice<Type>* slice, isize index, isize count);
@@ -100,7 +100,6 @@ namespace pax
     const Type&
     Slice<Type>::operator[](isize index) const
     {
-        pax_trace();
         pax_guard(0 <= index && index < size,
             "`index` is out of bounds");
 
@@ -111,7 +110,6 @@ namespace pax
     Type&
     Slice<Type>::operator[](isize index)
     {
-        pax_trace();
         pax_guard(0 <= index && index < size,
             "`index` is out of bounds");
 
@@ -122,9 +120,7 @@ namespace pax
     Slice<Type>
     slice_from(Array<Type, Size>&& value)
     {
-        pax_trace();
-
-        Slice<Type> self = {0};
+        Slice<Type> self;
 
         self.addr  = value.addr;
         self.size  = value.size;
@@ -137,9 +133,7 @@ namespace pax
     Slice<const Type>
     slice_from(const Array<Type, Size>& value)
     {
-        pax_trace();
-
-        Slice<const Type> self = {0};
+        Slice<const Type> self;
 
         self.addr  = value.addr;
         self.size  = value.size;
@@ -152,9 +146,7 @@ namespace pax
     Slice<Type>
     slice_from(Array<Type, Size>& value)
     {
-        pax_trace();
-
-        Slice<Type> self = {0};
+        Slice<Type> self;
 
         self.addr  = value.addr;
         self.size  = value.size;
@@ -165,9 +157,8 @@ namespace pax
 
     template <class Type>
     void
-    slice_empty(Slice<Type>* slice)
+    slice_clear(Slice<Type>* slice)
     {
-        pax_trace();
         pax_guard(slice != 0, "`slice` is null");
 
         auto& self = *slice;
@@ -179,7 +170,6 @@ namespace pax
     void
     slice_fill(Slice<Type>* slice, const Type& value)
     {
-        pax_trace();
         pax_guard(slice != 0, "`slice` is null");
 
         auto& self  = *slice;
@@ -191,55 +181,57 @@ namespace pax
 
         self.size = self.limit;
     }
-
+/*
     template <class Type>
     Slice<Type>
-    slice_resize(Slice<Type>* slice, Arena* arena, isize delta)
+    slice_copy(Slice<Type>* slice, Arena* arena, isize delta)
     {
         static const isize WIDTH_TYPE = pax_type_width(Type);
         static const isize ALIGN_TYPE = pax_type_align(Type);
 
-        pax_trace();
         pax_guard(slice != 0, "`slice` is null");
 
-        auto& self = *slice;
-        auto  copy = self;
-        byte* addr = (byte*) self.addr;
+        auto& self  = *slice;
+        auto  other = self;
+        isize avail = self.limit - self.size;
+        isize count = self.size + delta;
+        byte* addr  = (byte*) self.addr;
+  
+        if ( delta <= 0 )
 
         if ( delta <= 0 ) {
-            isize avail = self.size - self.limit;
+            if ( count < 0 ) count = 0;
 
-            if ( avail > delta )
-                self.size = self.limit + delta;
+            other.size = count;
 
-            return self;
+            return other;
         }
 
-        auto resl = arena_request(arena,
-            WIDTH_TYPE, ALIGN_TYPE, self.size + delta);
+        if ( self.size > self.limit - delta ) {
+            auto res = arena_request(arena, {
+                WIDTH_TYPE, ALIGN_TYPE, count,
+            });
 
-        if ( resl.error != _arena_err_none )
-            pax_warning(ARENA_ERR_TITLE[resl.error]);
+            if ( res.addr == 0 ) return self;
 
-        isize size = resl.width * resl.count;
-        auto  buff = buff_from(resl.addr, size);
+            isize size = count * WIDTH_TYPE;
+            auto  buff = buff_from_addr(res.addr, size);
 
-        buff_fill_addr(&buff, addr);
+            buff_fill_addr(&buff, addr);
 
-        copy.addr  = (Type*) resl.addr;
-        copy.size  = self.size;
-        copy.limit = self.size + delta;
+            other.addr  = (Type*) res.addr;
+            other.size  = self.size;
+            other.limit = count;
+        }
 
-        return copy;
+        return Slice<Type> {};
     }
 
     template <class Type>
     Slice<Type>
-    slice_insert_value(Slice<Type>* slice, Arena* arena, isize index, const Type& value, isize count)
+    slice_insert_val(Slice<Type>* slice, Arena* arena, isize index, const Type& value, isize count)
     {
-        pax_trace();
         pax_guard(slice != 0, "`slice` is null");
-        pax_guard(count >= 0, "`count` is negative");
 
         auto& self = *slice;
         auto  copy = self;
@@ -247,6 +239,8 @@ namespace pax
 
         if ( index < 0 || index > self.size )
             return self;
+
+        if ( count < 0 ) return self;
 
         if ( self.limit - count < self.size ) {
             while ( size < count) {
@@ -279,7 +273,6 @@ namespace pax
     {
         isize count = value.size;
 
-        pax_trace();
         pax_guard(slice != 0, "`slice` is null");
         pax_guard(count >= 0, "`count` is negative");
 
@@ -319,7 +312,6 @@ namespace pax
     Slice<Type>
     slice_insert(Slice<Type>* slice, Arena* arena, isize index, const Slice<Type>* value)
     {
-        pax_trace();
         pax_guard(slice != 0, "`slice` is null");
         pax_guard(value != 0, "`value` is null");
 
@@ -359,6 +351,7 @@ namespace pax
 
         return copy;
     }
+*/
 } // namespace pax
 
 #endif // PAX_CORE_SLICE_HPP

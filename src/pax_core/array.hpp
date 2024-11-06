@@ -32,10 +32,6 @@ namespace pax
         operator[](isize index);
     };
 
-    template <class Type, isize Size>
-    isize
-    array_has(const Array<Type, Size>& array, const Type& value);
-
     //
     //
     // Implementation.
@@ -46,7 +42,6 @@ namespace pax
     const Type&
     Array<Type, Size>::operator[](isize index) const
     {
-        pax_trace();
         pax_guard(0 <= index && index < size,
             "`index` is out of bounds");
 
@@ -57,21 +52,10 @@ namespace pax
     Type&
     Array<Type, Size>::operator[](isize index)
     {
-        pax_trace();
         pax_guard(0 <= index && index < size,
             "`index` is out of bounds");
 
         return addr[index];
-    }
-
-    template <class Type, isize Size>
-    isize
-    array_has(const Array<Type, Size>& array, const Type& value)
-    {
-        for ( isize i = 0; i < array.size; i += 1 )
-            if ( array[i] == value ) return i;
-
-        return -1;
     }
 } // namespace pax
 

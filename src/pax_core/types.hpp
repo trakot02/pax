@@ -95,8 +95,8 @@ namespace pax
         //
         //
 
-        const byte* addr;
-        isize       size;
+        const byte* addr = 0;
+        isize       size = 0;
 
         //
         //
@@ -104,15 +104,17 @@ namespace pax
         //
         //
 
+        s8(const byte* string);
+
         template <isize Size>
-        constexpr s8(const byte (&addr)[Size]);
+        constexpr s8(const byte (&string)[Size]);
 
         const byte&
         operator[](isize index) const;
     };
 
     s8
-    s8_from(const Buff* buff);
+    s8_from_buff(const Buff* buff);
 
     static const isize WIDTH_S8 = pax_type_width(s8);
     static const isize ALIGN_S8 = pax_type_align(s8);
@@ -124,8 +126,8 @@ namespace pax
     //
 
     template <isize Size>
-    constexpr s8::s8(const byte (&addr)[Size])
-        : addr {addr}
+    constexpr s8::s8(const byte (&string)[Size])
+        : addr {string}
         , size {Size - 1}
     {}
 } // namespace pax

@@ -4,29 +4,39 @@ project "pax_core"
     language   "C++"
     cppdialect "C++14"
 
+    architecture "x86_64"
+
     includedirs { "./" }
 
     files {
-        "pax_core/system.hpp",
-        "pax_core/debug.hpp",
         "pax_core/types.hpp",
         "pax_core/types.cpp",
+        "pax_core/array.hpp",
+        "pax_core/system.hpp",
+        "pax_core/debug.hpp",
         "pax_core/report.hpp",
         "pax_core/report.cpp",
-        "pax_core/array.hpp",
+        "pax_core/alloc.hpp",
+        "pax_core/alloc.cpp",
+        "pax_core/arena.hpp",
+        "pax_core/arena.cpp",
+        "pax_core/slice.hpp",
         "pax_core/write.hpp",
         "pax_core/write.cpp",
         "pax_core/read.hpp",
         "pax_core/read.cpp",
         "pax_core/buff.hpp",
         "pax_core/buff.cpp",
-        "pax_core/alloc.hpp",
-        "pax_core/alloc.cpp",
-        "pax_core/arena.hpp",
-        "pax_core/arena.cpp",
-        "pax_core/slice.hpp",
+        "pax_core/file.hpp",
+        "pax_core/file.cpp",
         "pax_core/export.hpp",
     }
+
+    filter { "system:windows" }
+        files {
+            "pax_core/file_windows.hpp",
+            "pax_core/file_windows.cpp",
+        }
 
     filter { "configurations:debug" }
         symbols "on"
@@ -39,6 +49,8 @@ project "report"
 
     language   "C++"
     cppdialect "C++14"
+
+    architecture "x86_64"
 
     includedirs { "./" }
 
@@ -60,6 +72,8 @@ project "buffer"
     language   "C++"
     cppdialect "C++14"
 
+    architecture "x86_64"
+
     includedirs { "./" }
 
     files {
@@ -80,10 +94,34 @@ project "arena"
     language   "C++"
     cppdialect "C++14"
 
+    architecture "x86_64"
+
     includedirs { "./" }
 
     files {
         "pax_core/main_arena.cpp",
+    }
+
+    links { "pax_core" }
+
+    filter { "configurations:debug" }
+        symbols "on"
+
+    filter { "configurations:release" }
+        optimize "on"
+
+project "file"
+    kind "consoleApp"
+
+    language   "C++"
+    cppdialect "C++14"
+
+    architecture "x86_64"
+
+    includedirs { "./" }
+
+    files {
+        "pax_core/main_file.cpp",
     }
 
     links { "pax_core" }

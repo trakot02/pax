@@ -25,7 +25,7 @@
 
     #define PAX_COMPILER_MS
 
-#else 
+#else
 
     #define PAX_COMPILER_OTHER
 

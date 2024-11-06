@@ -6,70 +6,60 @@
 
 namespace pax
 {
-    struct Buff;
-
     enum Write_Err : isize {
-        _write_err_none     = 0,
-        _write_err_overflow = 1,
+        WRITE_ERR_NONE     = 0,
+        WRITE_ERR_OVERFLOW = 1,
+        WRITE_ERR_SYSTEM   = 2,
 
-        _write_err_count = 2,
-    };
-
-    enum Write_Radix : isize {
-        _write_radix_dec = 0,
-        _write_radix_hex = 1,
-        _write_radix_bin = 2,
-        _write_radix_oct = 3,
-
-        _write_radix_count = 4,
+        WRITE_ERR_COUNT = 3,
     };
 
     struct Write_Res {
         isize     bytes;
         Write_Err error;
+        isize     system;
     };
 
     struct Write {
-        Write_Res (*byte_func)
-            (void* self, byte value, isize count);
+        Write_Res (*byte_func) (
+            void* self, byte value
+        ) = 0;
 
-        Write_Res (*buff_func)
-            (void* self, Buff* value);
+        Write_Res (*s8_func) (
+            void* self, s8 value
+        ) = 0;
 
-        Write_Res (*s8_func)
-            (void* self, s8 value);
+        Write_Res (*buff_func) (
+            void* self, Buff* value
+        ) = 0;
 
-        Write_Res (*u64_func)
-            (void* self, u64 value, Write_Radix radix);
+        void (*flush_func) (
+            void* self
+        ) = 0;
 
-        Write_Res (*i64_func)
-            (void* self, i64 value, Write_Radix radix);
+        void (*close_func) (
+            void* self
+        ) = 0;
 
-        Write_Res (*addr_func)
-            (void* self, void* value);
-
-        void* self;
+        void* self = 0;
     };
 
-    extern const Array<s8, _write_err_count> WRITE_ERR_TITLE;
+    extern const Array<s8, WRITE_ERR_COUNT> WRITE_ERR_TITLE;
 
     Write_Res
-    write_byte(const Write* write, byte value, isize count = 1);
-
-    Write_Res
-    write_buff(const Write* write, Buff* value);
+    write_byte(const Write* write, byte value);
 
     Write_Res
     write_s8(const Write* write, s8 value);
 
     Write_Res
-    write_u64(const Write* write, u64 value, Write_Radix radix = _write_radix_dec);
+    write_buff(const Write* write, Buff* value);
 
-    Write_Res
-    write_i64(const Write* write, i64 value, Write_Radix radix = _write_radix_dec);
+    void
+    write_flush(const Write* write);
 
-    Write_Res
-    write_addr(const Write* write, void* value);
+    void
+    write_close(const Write* write);
 } // namespace pax
 
 #endif // PAX_CORE_WRITE_HPP

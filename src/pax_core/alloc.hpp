@@ -5,21 +5,29 @@
 
 namespace pax
 {
+    struct Alloc_Info {
+        isize width;
+        isize align;
+        isize count;
+    };
+
     struct Alloc {
-        byte* (*request_func)
-            (void* self, isize width, isize align, isize count);
+        byte* (*request_func) (
+            void* self, Alloc_Info info
+        ) = 0;
 
-        void (*release_func)
-            (void* self, byte* addr, isize size);
+        void (*release_func) (
+            void* self, Alloc_Info info, byte* addr
+        ) = 0;
 
-        void* self;
+        void* self = 0;
     };
 
     byte*
-    alloc_request(const Alloc* alloc, isize width, isize align, isize count);
+    alloc_request(const Alloc* alloc, Alloc_Info info);
 
     void
-    alloc_release(const Alloc* alloc, byte* addr, isize size);
+    alloc_release(const Alloc* alloc, Alloc_Info info, byte* addr);
 
     Alloc
     base_alloc();
