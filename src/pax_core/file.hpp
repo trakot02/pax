@@ -11,7 +11,7 @@
 
 #elif defined(PAX_SYSTEM_POSIX)
 
-    // #include <pax_core/file_posix.hpp>
+    #include <pax_core/file_posix.hpp>
 
 #endif
 
@@ -51,4 +51,4 @@ namespace pax
     stdin_read_buff(Buff* value);
 } // namespace pax
 
-#endif PAX_CORE_FILE_HPP
+#endif // PAX_CORE_FILE_HPP

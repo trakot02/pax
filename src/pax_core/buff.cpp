@@ -321,7 +321,7 @@ namespace pax
         byte* addr  = self.curr;
 
         if ( count > avail )
-            return {0, WRITE_ERR_OVERFLOW};
+            return {avail, WRITE_ERR_OVERFLOW};
 
         for ( isize i = 0; i < count; i += 1 )
             addr[i] = value;
@@ -342,7 +342,7 @@ namespace pax
         byte* addr  = self.curr;
 
         if ( count > avail )
-            return {0, WRITE_ERR_OVERFLOW};
+            return {avail, WRITE_ERR_OVERFLOW};
 
         for ( isize i = 0; i < count; i += 1 )
             addr[i] = value[i];
@@ -365,7 +365,7 @@ namespace pax
         byte* addr  = self.curr;
 
         if ( count > avail )
-            return {0, WRITE_ERR_OVERFLOW};
+            return {avail, WRITE_ERR_OVERFLOW};
 
         for ( isize i = 0; i < count; i += 1 )
             addr[i] = other.head[i];
@@ -397,7 +397,7 @@ namespace pax
         u64   val = value;
 
         if ( delta >= avail )
-            return {0, WRITE_ERR_OVERFLOW};
+            return {avail, WRITE_ERR_OVERFLOW};
 
         for ( isize i = 0; i < delta; i += 1 )
             addr[i] = prefix[i];
@@ -406,7 +406,7 @@ namespace pax
 
         do {
             if ( count >= avail )
-                return {0, WRITE_ERR_OVERFLOW};
+                return {avail, WRITE_ERR_OVERFLOW};
 
             idx = val % digits.size;
             val = val / digits.size;
@@ -453,7 +453,7 @@ namespace pax
         byte  sig = '+';
 
         if ( delta >= avail - (value != 0) )
-            return {0, WRITE_ERR_OVERFLOW};
+            return {avail, WRITE_ERR_OVERFLOW};
 
         addr[count] = (value > 0) * '+' +
                       (value < 0) * '-';
@@ -469,7 +469,7 @@ namespace pax
 
         do {
             if ( count >= avail )
-                return {0, WRITE_ERR_OVERFLOW};
+                return {avail, WRITE_ERR_OVERFLOW};
 
             idx = val % digits.size;
             val = val / digits.size;
@@ -511,7 +511,7 @@ namespace pax
         byte* addr  = self.curr;
 
         if ( count > avail )
-            return {0, READ_ERR_OVERFLOW};
+            return {avail, READ_ERR_OVERFLOW};
 
         value[0] = addr[0];
 
@@ -562,7 +562,8 @@ namespace pax
         u64   other = 0;
         auto  error = READ_ERR_NONE;
 
-        if ( avail <= 0 ) return {0, READ_ERR_SYNTAX};
+        if ( count >= avail )
+            return {avail, READ_ERR_SYNTAX};
 
         if ( addr[count] == '+' ) count += 1;
 
@@ -631,7 +632,8 @@ namespace pax
         u64   extra = 0;
         auto  error = READ_ERR_NONE;
 
-        if ( avail <= 0 ) return {0, READ_ERR_SYNTAX};
+        if ( count >= avail )
+            return {avail, READ_ERR_SYNTAX};
 
         extra = (addr[count] == '-');
 

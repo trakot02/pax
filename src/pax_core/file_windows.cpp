@@ -110,7 +110,7 @@ namespace pax
     Write
     file_write(File* file)
     {
-        Write self = {0};
+        Write self;
 
         self.byte_func  = &_file_write_byte;
         self.s8_func    = &_file_write_s8;
@@ -125,12 +125,12 @@ namespace pax
     Read
     file_read(File* file)
     {
-        Read self = {0};
+        Read self;
 
         self.byte_func  = &_file_read_byte;
         self.buff_func  = &_file_read_buff;
         self.close_func = &_file_close;
-        self.self = file;
+        self.self       = file;
 
         return self;
     }
@@ -141,21 +141,18 @@ namespace pax
         pax_guard(file != 0, "`file` is null");
 
         auto& self  = *file;
-        isize count = 1;
-        isize wrote = 0;
+        isize avail = 1;
+        isize count = 0;
 
         pax_guard(self.handle != 0, "The file is closed");
 
         auto res = WriteFile(self.handle, &value,
-            (DWORD) count, (LPDWORD) &wrote, 0);
+            (DWORD) avail, (LPDWORD) &count, 0);
 
-        if ( res == 0 ) {
-            pax_guard(wrote == 0, "The operation failed");
+        if ( res == 0 )
+            return {count, WRITE_ERR_SYSTEM, GetLastError()};
 
-            return {0, WRITE_ERR_SYSTEM, GetLastError()};
-        }
-
-        return {wrote, WRITE_ERR_NONE};
+        return {count, WRITE_ERR_NONE};
     }
 
     Write_Res
@@ -164,21 +161,18 @@ namespace pax
         pax_guard(file != 0, "`file` is null");
 
         auto& self  = *file;
-        isize count = value.size;
-        isize wrote = 0;
+        isize avail = value.size;
+        isize count = 0;
 
         pax_guard(self.handle != 0, "The file is closed");
 
         auto res = WriteFile(self.handle, value.addr,
-            (DWORD) count, (LPDWORD) &wrote, 0);
+            (DWORD) avail, (LPDWORD) &count, 0);
 
-        if ( res == 0 ) {
-            pax_guard(wrote == 0, "The operation failed");
+        if ( res == 0 )
+            return {count, WRITE_ERR_SYSTEM, GetLastError()};
 
-            return {0, WRITE_ERR_SYSTEM, GetLastError()};
-        }
-
-        return {wrote, WRITE_ERR_NONE};
+        return {count, WRITE_ERR_NONE};
     }
 
     Write_Res
@@ -187,23 +181,20 @@ namespace pax
         pax_guard(file != 0, "`file` is null");
 
         auto& self  = *file;
-        isize count = buff_size(value);
-        isize wrote = 0;
+        isize avail = buff_size(value);
+        isize count = 0;
 
         pax_guard(self.handle != 0, "The file is closed");
 
         auto res = WriteFile(self.handle, value->head,
-            (DWORD) count, (LPDWORD) &wrote, 0);
+            (DWORD) avail, (LPDWORD) &count, 0);
 
-        if ( res == 0 ) {
-            pax_guard(wrote == 0, "The operation failed");
-
-            return {0, WRITE_ERR_SYSTEM, GetLastError()};
-        }
+        if ( res == 0 )
+            return {count, WRITE_ERR_SYSTEM, GetLastError()};
 
         value->curr = value->head;
 
-        return {wrote, WRITE_ERR_NONE};
+        return {count, WRITE_ERR_NONE};
     }
 
     Read_Res
@@ -213,18 +204,15 @@ namespace pax
 
         auto& self  = *file;
         isize avail = 1;
-        isize read  = 0;
+        isize count = 0;
 
         auto res = ReadFile(self.handle, value,
-            (DWORD) avail, (LPDWORD) &read, 0);
+            (DWORD) avail, (LPDWORD) &count, 0);
 
-        if ( res == 0 ) {
-            pax_guard(read == 0, "The operation failed");
+        if ( res == 0 )
+            return {count, READ_ERR_SYSTEM, GetLastError()};
 
-            return {0, READ_ERR_SYSTEM, GetLastError()};
-        }
-
-        return {read, READ_ERR_NONE};
+        return {count, READ_ERR_NONE};
     }
 
     Read_Res
@@ -234,20 +222,17 @@ namespace pax
 
         auto& self  = *file;
         isize avail = buff_avail(value);
-        isize read  = 0;
+        isize count = 0;
 
         auto res = ReadFile(self.handle, value->curr,
-            (DWORD) avail, (LPDWORD) &read, 0);
+            (DWORD) avail, (LPDWORD) &count, 0);
 
-        if ( res == 0 ) {
-            pax_guard(read == 0, "The operation failed");
+        if ( res == 0 )
+            return {count, READ_ERR_SYSTEM, GetLastError()};
 
-            return {0, READ_ERR_SYSTEM, GetLastError()};
-        }
+        value->curr += count;
 
-        value->curr += read;
-
-        return {read, READ_ERR_NONE};
+        return {count, READ_ERR_NONE};
     }
 
     //

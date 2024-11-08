@@ -1,14 +1,12 @@
 #include <pax_core/export.hpp>
 
-#include <stdio.h>
-
 using namespace pax;
 
 int
 main(int argc, char* argv[])
 {
     Arena arena = arena_init(2000);
-    
+
     File file;
 
     auto err = file_create(&file, "temp.txt");

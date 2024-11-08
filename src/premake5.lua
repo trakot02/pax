@@ -38,6 +38,12 @@ project "pax_core"
             "pax_core/file_windows.cpp",
         }
 
+    filter { "system:linux" }
+        files {
+            "pax_core/file_posix.hpp",
+            "pax_core/file_posix.cpp",
+        }
+
     filter { "configurations:debug" }
         symbols "on"
 

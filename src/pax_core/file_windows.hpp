@@ -10,9 +10,10 @@ namespace pax
     struct Buff;
 
     enum File_Err : isize {
-        FILE_ERR_NONE = 0,
+        FILE_ERR_NONE   = 0,
+        FILE_ERR_SYSTEM = 1,
 
-        FILE_ERR_COUNT = 1,
+        FILE_ERR_COUNT = 2,
     };
 
     struct File {
