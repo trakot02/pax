@@ -19,8 +19,9 @@ namespace pax
         REPORT_LEVEL_MESSAGE = 4,
         REPORT_LEVEL_SUCCESS = 5,
         REPORT_LEVEL_DEBUG   = 6,
+        REPORT_LEVEL_TRACE   = 7,
 
-        REPORT_LEVEL_COUNT = 7,
+        REPORT_LEVEL_COUNT = 8,
     };
 
     enum Report_Panic : isize {
@@ -71,6 +72,9 @@ namespace pax
     report_debug(Report report);
 
     void
+    report_trace(Report report);
+
+    void
     report_panic(Report report);
 
     void
@@ -94,6 +98,9 @@ namespace pax
 
 #define pax_debug(text) \
     pax::report_debug({text, __func__, __FILE__, (usize) __LINE__})
+
+#define pax_trace() \
+    pax::report_trace({"", __func__, __FILE__, (usize) __LINE__})
 
 #define pax_panic(text) \
     pax::report_panic({text, __func__, __FILE__, (usize) __LINE__})

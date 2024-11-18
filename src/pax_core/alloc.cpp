@@ -20,6 +20,7 @@ namespace pax
     byte*
     alloc_request(const Alloc* alloc, Alloc_Info info)
     {
+        pax_trace();
         pax_guard(alloc != 0, "`alloc` is null");
 
         auto& self = *alloc;
@@ -33,6 +34,7 @@ namespace pax
     void
     alloc_release(const Alloc* alloc, Alloc_Info info, byte* addr)
     {
+        pax_trace();
         pax_guard(alloc != 0, "`alloc` is null");
 
         auto& self = *alloc;
@@ -67,6 +69,7 @@ namespace pax
         auto align = info.align;
         auto count = info.count;
 
+        pax_trace();
         pax_guard(self  == 0, "`self` isn't null");
         pax_guard(width  > 0, "`width` isn't positive");
 
@@ -91,6 +94,7 @@ namespace pax
         auto align = info.align;
         auto count = info.count;
 
+        pax_trace();
         pax_guard(self  == 0, "`self` isn't null");
         pax_guard(width  > 0, "`width` isn't positive");
 

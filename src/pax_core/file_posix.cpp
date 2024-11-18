@@ -7,22 +7,16 @@
 
 namespace pax
 {
-    Write_Res
-    _file_write_byte(void* file, byte value);
-
-    Write_Res
+    Write_Value
     _file_write_s8(void* file, s8 value);
 
-    Write_Res
+    Write_Value
     _file_write_buff(void* file, Buff* value);
 
     void
     _file_flush(void* file);
 
-    Read_Res
-    _file_read_byte(void* file, byte* value);
-
-    Read_Res
+    Read_Value
     _file_read_buff(void* file, Buff* value);
 
     void
@@ -46,9 +40,10 @@ namespace pax
         "stdin", STDIN_FILENO,
     };
 
-    File_Err
+    File_Error
     file_open(File* file, s8 name)
     {
+        pax_trace();
         pax_guard(file != 0, "`file` is null");
 
         auto& self = *file;
@@ -61,15 +56,16 @@ namespace pax
             self.name   = name;
             self.handle = handle;
 
-            return FILE_ERR_NONE;
+            return FILE_ERROR_NONE;
         }
 
-        return (File_Err) errno;
+        return (File_Error) errno;
     }
 
-    File_Err
+    File_Error
     file_create(File* file, s8 name)
     {
+        pax_trace();
         pax_guard(file != 0, "`file` is null");
 
         auto& self = *file;
@@ -83,24 +79,25 @@ namespace pax
             self.name   = name;
             self.handle = handle;
 
-            return FILE_ERR_NONE;
+            return FILE_ERROR_NONE;
         }
 
-        return (File_Err) errno;
+        return (File_Error) errno;
     }
 
     void
     file_close(File* file)
     {
+        pax_trace();
         pax_guard(file != 0, "`file` is null");
 
         auto& self = *file;
 
         if ( self.handle < 0 ) return;
 
-        auto res = close(self.handle);
+        auto code = close(self.handle);
 
-        pax_guard(res >= 0, "The operation failed");
+        pax_guard(code >= 0, "The operation failed");
 
         self.name   = "";
         self.handle = -1;
@@ -111,7 +108,6 @@ namespace pax
     {
         Write self;
 
-        self.byte_func  = &_file_write_byte;
         self.s8_func    = &_file_write_s8;
         self.buff_func  = &_file_write_buff;
         self.flush_func = &_file_flush;
@@ -126,7 +122,6 @@ namespace pax
     {
         Read self;
 
-        self.byte_func  = &_file_read_byte;
         self.buff_func  = &_file_read_buff;
         self.close_func = &_file_close;
         self.self       = file;
@@ -134,114 +129,89 @@ namespace pax
         return self;
     }
 
-    Write_Res
-    file_write_byte(File* file, byte value)
-    {
-        pax_guard(file != 0, "`file` is null");
-
-        auto& self  = *file;
-        isize avail = 1;
-
-        pax_guard(self.handle >= 0, "The file is closed");
-
-        auto res = write(self.handle, &value, avail);
-
-        if ( res < 0 )
-            return {0, WRITE_ERR_SYSTEM, errno};
-
-        return {avail, WRITE_ERR_NONE};
-    }
-
-    Write_Res
+    Write_Value
     file_write_s8(File* file, s8 value)
     {
+        pax_trace();
         pax_guard(file != 0, "`file` is null");
 
         auto& self  = *file;
-        isize count = 0;
         isize avail = value.size;
+        isize count = value.size;
+        auto* addr  = value.addr;
 
         pax_guard(self.handle >= 0, "The file is closed");
 
         do {
-            auto res = write(self.handle, value.addr + count,
-                avail - count);
+            auto code = write(self.handle, addr, count);
 
-            if ( res < 0 )
-                return {count, WRITE_ERR_SYSTEM, errno};
+            if ( code < 0 )
+                return {avail - count, WRITE_ERROR_SYSTEM, errno};
 
-            count += res;
-        } while ( count < avail );
+            count -= code;
+            addr  += code;
+        } while ( count > 0 );
 
-        return {avail, WRITE_ERR_NONE};
+        return {avail, WRITE_ERROR_NONE};
     }
 
-    Write_Res
+    Write_Value
     file_write_buff(File* file, Buff* value)
     {
-        pax_guard(file != 0, "`file` is null");
-
-        auto& self  = *file;
-        isize count = 0;
-        isize avail = buff_size(value);
-
-        pax_guard(self.handle >= 0, "The file is closed");
-
-        do {
-            auto res = write(self.handle, value->head + count,
-                avail - count);
-
-            if ( res < 0 )
-                return {count, WRITE_ERR_SYSTEM, errno};
-
-            count += res;
-        } while ( count < avail );
-
-        value->curr = value->head;
-
-        return {avail, WRITE_ERR_NONE};
-    }
-
-    Read_Res
-    file_read_byte(File* file, byte* value)
-    {
-        pax_guard(file != 0, "`file` is null");
-
-        auto& self  = *file;
-        isize avail = 1;
-
-        auto res = read(self.handle, value, avail);
-
-        if ( res < 0 )
-            return {0, READ_ERR_SYSTEM, errno};
-
-        return {res, READ_ERR_NONE};
-    }
-
-    Read_Res
-    file_read_buff(File* file, Buff* value)
-    {
-        pax_guard(file != 0, "`file` is null");
+        pax_trace();
+        pax_guard(file  != 0, "`file` is null");
+        pax_guard(value != 0, "`value` is null");
 
         auto& self  = *file;
         isize avail = buff_avail(value);
-        isize count = 0;
+        isize count = avail;
+        byte* addr  = value->head;
+
+        pax_guard(self.handle >= 0, "The file is closed");
 
         do {
-            auto res = read(self.handle, value->curr + count,
-                avail - count);
+            auto code = write(self.handle, addr, count);
 
-            if ( res < 0 )
-                return {count, READ_ERR_SYSTEM, errno};
+            if ( code < 0 )
+                return {avail - count, WRITE_ERROR_SYSTEM, errno};
 
-            if ( res == 0 ) break;
+            count -= code;
+            addr  += code;
+        } while ( count > 0 );
 
-            count += res;
-        } while ( count < avail );
+        value->head = value->addr;
+        value->tail = value->addr;
 
-        value->curr += count;
+        return {avail, WRITE_ERROR_NONE};
+    }
 
-        return {count, READ_ERR_NONE};
+    Read_Value
+    file_read_buff(File* file, Buff* value)
+    {
+        pax_trace();
+        pax_guard(file  != 0, "`file` is null");
+        pax_guard(value != 0, "`value` is null");
+
+        auto& self  = *file;
+        isize avail = buff_avail(value);
+        isize count = avail;
+        byte* addr  = value->tail;
+
+        do {
+            auto code = read(self.handle, addr, count);
+
+            if ( code < 0 )
+                return {avail - count, READ_ERROR_SYSTEM, errno};
+
+            if ( code == 0 ) break;
+
+            count -= code;
+            addr  += code;
+        } while ( count > 0 );
+
+        value->tail += avail;
+
+        return {avail, READ_ERROR_NONE};
     }
 
     //
@@ -250,19 +220,13 @@ namespace pax
     //
     //
 
-    Write_Res
-    _file_write_byte(void* file, byte value)
-    {
-        return file_write_byte((File*) file, value);
-    }
-
-    Write_Res
+    Write_Value
     _file_write_s8(void* file, s8 value)
     {
         return file_write_s8((File*) file, value);
     }
 
-    Write_Res
+    Write_Value
     _file_write_buff(void* file, Buff* value)
     {
         return file_write_buff((File*) file, value);
@@ -274,13 +238,7 @@ namespace pax
         pax_guard(file != 0, "`file` is null");
     }
 
-    Read_Res
-    _file_read_byte(void* file, byte* value)
-    {
-        return file_read_byte((File*) file, value);
-    }
-
-    Read_Res
+    Read_Value
     _file_read_buff(void* file, Buff* value)
     {
         return file_read_buff((File*) file, value);

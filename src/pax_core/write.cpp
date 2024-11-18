@@ -8,28 +8,16 @@ namespace pax
     //
     //
 
-    const Array<s8, WRITE_ERR_COUNT> WRITE_ERR_TITLE = {
-        "WRITE_ERR_NONE",
-        "WRITE_ERR_OVERFLOW",
-        "WRITE_ERR_SYSTEM",
+    const Array<s8, WRITE_ERROR_COUNT> WRITE_ERROR_TITLE = {
+        "WRITE_ERROR_NONE",
+        "WRITE_ERROR_OVERFLOW",
+        "WRITE_ERROR_SYSTEM",
     };
 
-    Write_Res
-    write_byte(const Write* write, byte value)
-    {
-        pax_guard(write != 0, "`write` is null");
-
-        auto& self = *write;
-        auto* func = self.byte_func;
-
-        pax_guard(func != 0, "The function is null");
-
-        return (*func)(self.self, value);
-    }
-
-    Write_Res
+    Write_Value
     write_s8(const Write* write, s8 value)
     {
+        pax_trace();
         pax_guard(write != 0, "`write` is null");
 
         auto& self = *write;
@@ -40,9 +28,10 @@ namespace pax
         return (*func)(self.self, value);
     }
 
-    Write_Res
+    Write_Value
     write_buff(const Write* write, Buff* value)
     {
+        pax_trace();
         pax_guard(write != 0, "`write` is null");
 
         auto& self = *write;
@@ -56,6 +45,7 @@ namespace pax
     void
     write_flush(const Write* write)
     {
+        pax_trace();
         pax_guard(write != 0, "`write` is null");
 
         auto& self = *write;
@@ -69,6 +59,7 @@ namespace pax
     void
     write_close(const Write* write)
     {
+        pax_trace();
         pax_guard(write != 0, "`write` is null");
 
         auto& self = *write;

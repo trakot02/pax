@@ -42,6 +42,9 @@ namespace pax
     static const isize WIDTH_F64   = pax_type_width(f64);
     static const isize WIDTH_F32   = pax_type_width(f32);
 
+    static const isize WIDTH_MAX = WIDTH_ISIZE;
+    static const isize WIDTH_MIN = WIDTH_BYTE;
+
     static const isize ALIGN_BYTE  = pax_type_align(byte);
     static const isize ALIGN_USIZE = pax_type_align(usize);
     static const isize ALIGN_U64   = pax_type_align(u64);
@@ -56,8 +59,6 @@ namespace pax
     static const isize ALIGN_F64   = pax_type_align(f64);
     static const isize ALIGN_F32   = pax_type_align(f32);
 
-    static const isize WIDTH_MAX = WIDTH_ISIZE;
-    static const isize WIDTH_MIN = WIDTH_BYTE;
     static const isize ALIGN_MAX = ALIGN_ISIZE;
     static const isize ALIGN_MIN = ALIGN_BYTE;
 
@@ -85,7 +86,6 @@ namespace pax
     static const i16   MIN_I16   = INT16_MIN;
     static const i8    MIN_I8    = INT8_MIN;
 
-    struct s8;
     struct Buff;
 
     struct s8 {
@@ -106,6 +106,8 @@ namespace pax
 
         s8(const byte* string);
 
+        s8(const byte* string, isize size);
+
         template <isize Size>
         constexpr s8(const byte (&string)[Size]);
 
@@ -114,7 +116,16 @@ namespace pax
     };
 
     s8
-    s8_from_buff(const Buff* buff);
+    s8_from(const Buff* buff);
+
+    s8
+    s8_trim(s8 string);
+
+    s8
+    s8_trim_head(s8 string);
+
+    s8
+    s8_trim_tail(s8 string);
 
     static const isize WIDTH_S8 = pax_type_width(s8);
     static const isize ALIGN_S8 = pax_type_align(s8);

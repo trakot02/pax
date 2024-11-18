@@ -37,10 +37,10 @@ namespace pax
     //
     //
 
-    const Array<s8, ARENA_ERR_COUNT> ARENA_ERR_TITLE = {
-        "ARENA_ERR_NONE",
-        "ARENA_ERR_REQUEST_TOO_BIG",
-        "ARENA_ERR_OUT_OF_MEMORY",
+    const Array<s8, ARENA_ERROR_COUNT> ARENA_ERROR_TITLE = {
+        "ARENA_ERROR_NONE",
+        "ARENA_ERROR_REQUEST_TOO_BIG",
+        "ARENA_ERROR_OUT_OF_MEMORY",
     };
 
     Arena
@@ -48,6 +48,7 @@ namespace pax
     {
         static const isize MAX_ARENA = 65536;
 
+        pax_trace();
         pax_guard(size >= 0, "`size` isn't positive");
 
         Arena self;
@@ -68,6 +69,7 @@ namespace pax
     void
     arena_drop(Arena* arena)
     {
+        pax_trace();
         pax_guard(arena != 0, "`arena` is null");
 
         auto& self = *arena;
@@ -80,23 +82,24 @@ namespace pax
         self.list  = 0;
     }
 
-    Arena_Res
+    Arena_Value
     arena_request(Arena* arena, Alloc_Info info)
     {
         auto width = info.width;
         auto align = info.align;
         auto count = info.count;
 
+        pax_trace();
         pax_guard(arena != 0, "`arena` is null");
         pax_guard(width  > 0, "`width` isn't positive");
 
         auto& self = *arena;
         byte* addr = 0;
 
-        if ( count <= 0 ) return {info, 0, ARENA_ERR_NONE};
+        if ( count <= 0 ) return {info, 0, ARENA_ERROR_NONE};
 
         if ( width * count > self.size )
-            return {info, 0, ARENA_ERR_REQUEST_TOO_BIG};
+            return {info, 0, ARENA_ERROR_REQUEST_TOO_BIG};
 
         if ( self.list == 0 ) self.list = arena_attach(arena);
 
@@ -104,7 +107,7 @@ namespace pax
 
         while ( addr == 0 ) {
             if ( node == 0 )
-                return {info, 0, ARENA_ERR_OUT_OF_MEMORY};
+                return {info, 0, ARENA_ERROR_OUT_OF_MEMORY};
 
             addr = arena_node_request(node, info);
 
@@ -114,12 +117,13 @@ namespace pax
             node = node->next;
         }
 
-        return {info, addr, ARENA_ERR_NONE};
+        return {info, addr, ARENA_ERROR_NONE};
     }
 
     void
     arena_release(Arena* arena)
     {
+        pax_trace();
         pax_guard(arena != 0, "`arena` is null");
 
         auto& self = *arena;
@@ -135,6 +139,7 @@ namespace pax
     Alloc
     arena_set_alloc(Arena* arena, Alloc alloc)
     {
+        pax_trace();
         pax_guard(arena != 0, "`arena` is null");
 
         auto& self = *arena;
@@ -154,6 +159,7 @@ namespace pax
     byte*
     align_forw(byte* addr, isize align)
     {
+        pax_trace();
         pax_guard(align > 0 && (align & (align - 1)) == 0,
             "`align` is not a power of two");
 
@@ -166,6 +172,7 @@ namespace pax
     Arena_Node
     arena_node_from(byte* addr, isize size)
     {
+        pax_trace();
         pax_guard(size >= 0, "`size` is negative");
 
         Arena_Node self;
@@ -187,6 +194,7 @@ namespace pax
         auto align = info.align;
         auto count = info.count;
 
+        pax_trace();
         pax_guard(node  != 0, "`node` is null");
         pax_guard(width  > 0, "`width` isn't positive");
 
@@ -204,9 +212,9 @@ namespace pax
 
         if ( count <= (avail - extra) / width ) {
             isize size = width * count;
-            auto  buff = buff_from_addr(addr, size);
+            auto  buff = buff_from(addr, size);
 
-            buff_clear(&buff);
+            buff_fill(&buff);
 
             self.curr = addr + size;
 
@@ -219,6 +227,7 @@ namespace pax
     void
     arena_node_release(Arena_Node* node)
     {
+        pax_trace();
         pax_guard(node!= 0, "`node` is null");
 
         auto& self = *node;
@@ -229,6 +238,7 @@ namespace pax
     Arena_Node*
     arena_attach(Arena* arena)
     {
+        pax_trace();
         pax_guard(arena != 0, "`arena` is null");
 
         auto& self = *arena;
@@ -249,6 +259,7 @@ namespace pax
     Arena_Node*
     arena_detach(Arena* arena, Arena_Node* node)
     {
+        pax_trace();
         pax_guard(arena != 0, "`arena` is null");
 
         auto& self = *arena;

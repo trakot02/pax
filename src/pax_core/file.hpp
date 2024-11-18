@@ -20,34 +20,25 @@ namespace pax
     Write
     stdout_write();
 
+    Write_Value
+    stdout_write_s8(s8 value);
+
+    Write_Value
+    stdout_write_buff(Buff* value);
+
     Write
     stderr_write();
+
+    Write_Value
+    stderr_write_s8(s8 value);
+
+    Write_Value
+    stderr_write_buff(Buff* value);
 
     Read
     stdin_read();
 
-    Write_Res
-    stdout_write_byte(byte value);
-
-    Write_Res
-    stdout_write_s8(s8 value);
-
-    Write_Res
-    stdout_write_buff(Buff* value);
-
-    Write_Res
-    stderr_write_byte(byte value);
-
-    Write_Res
-    stderr_write_s8(s8 value);
-
-    Write_Res
-    stderr_write_buff(Buff* value);
-
-    Read_Res
-    stdin_read_byte(byte* value);
-
-    Read_Res
+    Read_Value
     stdin_read_buff(Buff* value);
 } // namespace pax
 

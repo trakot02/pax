@@ -42,6 +42,7 @@ namespace pax
     const Type&
     Array<Type, Size>::operator[](isize index) const
     {
+        pax_trace();
         pax_guard(0 <= index && index < size,
             "`index` is out of bounds");
 
@@ -52,6 +53,7 @@ namespace pax
     Type&
     Array<Type, Size>::operator[](isize index)
     {
+        pax_trace();
         pax_guard(0 <= index && index < size,
             "`index` is out of bounds");
 

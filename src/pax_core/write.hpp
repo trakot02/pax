@@ -6,30 +6,26 @@
 
 namespace pax
 {
-    enum Write_Err : isize {
-        WRITE_ERR_NONE     = 0,
-        WRITE_ERR_OVERFLOW = 1,
-        WRITE_ERR_SYSTEM   = 2,
+    enum Write_Error : isize {
+        WRITE_ERROR_NONE     = 0,
+        WRITE_ERROR_OVERFLOW = 1,
+        WRITE_ERROR_SYSTEM   = 2,
 
-        WRITE_ERR_COUNT = 3,
+        WRITE_ERROR_COUNT = 3,
     };
 
-    struct Write_Res {
-        isize     bytes;
-        Write_Err error;
-        isize     system;
+    struct Write_Value {
+        isize       count;
+        Write_Error error;
+        isize       system;
     };
 
     struct Write {
-        Write_Res (*byte_func) (
-            void* self, byte value
-        ) = 0;
-
-        Write_Res (*s8_func) (
+        Write_Value (*s8_func) (
             void* self, s8 value
         ) = 0;
 
-        Write_Res (*buff_func) (
+        Write_Value (*buff_func) (
             void* self, Buff* value
         ) = 0;
 
@@ -44,15 +40,12 @@ namespace pax
         void* self = 0;
     };
 
-    extern const Array<s8, WRITE_ERR_COUNT> WRITE_ERR_TITLE;
+    extern const Array<s8, WRITE_ERROR_COUNT> WRITE_ERROR_TITLE;
 
-    Write_Res
-    write_byte(const Write* write, byte value);
-
-    Write_Res
+    Write_Value
     write_s8(const Write* write, s8 value);
 
-    Write_Res
+    Write_Value
     write_buff(const Write* write, Buff* value);
 
     void

@@ -29,6 +29,12 @@ project "pax_core"
         "pax_core/buff.cpp",
         "pax_core/file.hpp",
         "pax_core/file.cpp",
+        "pax_core/format.hpp",
+        "pax_core/format.cpp",
+        "pax_core/match.hpp",
+        "pax_core/match.cpp",
+        "pax_core/parse.hpp",
+        "pax_core/parse.cpp",
         "pax_core/export.hpp",
     }
 

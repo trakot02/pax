@@ -9,11 +9,11 @@ namespace pax
 {
     struct Buff;
 
-    enum File_Err : isize {
-        FILE_ERR_NONE   = 0,
-        FILE_ERR_SYSTEM = 1,
+    enum File_Error : isize {
+        FILE_ERROR_NONE   = 0,
+        FILE_ERROR_SYSTEM = 1,
 
-        FILE_ERR_COUNT = 2,
+        FILE_ERROR_COUNT = 2,
     };
 
     struct File {
@@ -29,7 +29,7 @@ namespace pax
     // Opens a file in read mode. If the file does not exist
     // it returns an error.
     //
-    File_Err
+    File_Error
     file_open(File* file, s8 name);
 
     //
@@ -37,7 +37,7 @@ namespace pax
     // it gets created; if it does already exist it gets
     // truncated.
     //
-    File_Err
+    File_Error
     file_create(File* file, s8 name);
 
     void
@@ -49,19 +49,13 @@ namespace pax
     Read
     file_read(File* file);
 
-    Write_Res
-    file_write_byte(File* file, byte value);
-
-    Write_Res
+    Write_Value
     file_write_s8(File* file, s8 value);
 
-    Write_Res
+    Write_Value
     file_write_buff(File* file, Buff* value);
 
-    Read_Res
-    file_read_byte(File* file, byte* value);
-
-    Read_Res
+    Read_Value
     file_read_buff(File* file, Buff* value);
 } // namespace pax
 

@@ -9,18 +9,18 @@ namespace pax
 {
     struct Arena_Node;
 
-    enum Arena_Err : isize {
-        ARENA_ERR_NONE            = 0,
-        ARENA_ERR_REQUEST_TOO_BIG = 1,
-        ARENA_ERR_OUT_OF_MEMORY   = 2,
+    enum Arena_Error : isize {
+        ARENA_ERROR_NONE            = 0,
+        ARENA_ERROR_REQUEST_TOO_BIG = 1,
+        ARENA_ERROR_OUT_OF_MEMORY   = 2,
 
-        ARENA_ERR_COUNT = 3,
+        ARENA_ERROR_COUNT = 3,
     };
 
-    struct Arena_Res {
-        Alloc_Info info;
-        byte*      addr;
-        Arena_Err  error;
+    struct Arena_Value {
+        Alloc_Info   info;
+        byte*        addr;
+        Arena_Error  error;
     };
 
     struct Arena {
@@ -29,7 +29,7 @@ namespace pax
         Arena_Node* list = 0;
     };
 
-    extern const Array<s8, ARENA_ERR_COUNT> ARENA_ERR_TITLE;
+    extern const Array<s8, ARENA_ERROR_COUNT> ARENA_ERROR_TITLE;
 
     Arena
     arena_init(isize size, Alloc alloc = base_alloc());
@@ -37,7 +37,7 @@ namespace pax
     void
     arena_drop(Arena* arena);
 
-    Arena_Res
+    Arena_Value
     arena_request(Arena* arena, Alloc_Info info);
 
     void

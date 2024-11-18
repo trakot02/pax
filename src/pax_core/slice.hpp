@@ -3,8 +3,6 @@
 
 #include <pax_core/types.hpp>
 #include <pax_core/array.hpp>
-#include <pax_core/arena.hpp>
-#include <pax_core/buff.hpp>
 
 namespace pax
 {
@@ -44,7 +42,7 @@ namespace pax
     template <class Type, isize Size>
     Slice<Type>
     slice_from(Array<Type, Size>& value);
-
+/*
     template <class Type>
     void
     slice_clear(Slice<Type>* slice);
@@ -52,7 +50,7 @@ namespace pax
     template <class Type>
     void
     slice_fill(Slice<Type>* slice, const Type& value);
-/*
+
     template <class Type>
     Slice<Type>
     slice_copy(Slice<Type>* slice, Arena* arena, isize delta);
@@ -68,7 +66,7 @@ namespace pax
     template <class Type>
     Slice<Type>
     slice_insert(Slice<Type>* slice, Arena* arena, isize index, const Slice<Type>* value);
-  
+
     template <class Type>
     void
     slice_remove(Slice<Type>* slice, isize index, isize count);
@@ -154,7 +152,7 @@ namespace pax
 
         return self;
     }
-
+/*
     template <class Type>
     void
     slice_clear(Slice<Type>* slice)
@@ -181,7 +179,7 @@ namespace pax
 
         self.size = self.limit;
     }
-/*
+
     template <class Type>
     Slice<Type>
     slice_copy(Slice<Type>* slice, Arena* arena, isize delta)
@@ -196,7 +194,7 @@ namespace pax
         isize avail = self.limit - self.size;
         isize count = self.size + delta;
         byte* addr  = (byte*) self.addr;
-  
+
         if ( delta <= 0 )
 
         if ( delta <= 0 ) {
@@ -208,18 +206,18 @@ namespace pax
         }
 
         if ( self.size > self.limit - delta ) {
-            auto res = arena_request(arena, {
+            auto value = arena_request(arena, {
                 WIDTH_TYPE, ALIGN_TYPE, count,
             });
 
-            if ( res.addr == 0 ) return self;
+            if ( value.addr == 0 ) return self;
 
             isize size = count * WIDTH_TYPE;
-            auto  buff = buff_from_addr(res.addr, size);
+            auto  buff = buff_from(value.addr, size);
 
             buff_fill_addr(&buff, addr);
 
-            other.addr  = (Type*) res.addr;
+            other.addr  = (Type*) value.addr;
             other.size  = self.size;
             other.limit = count;
         }

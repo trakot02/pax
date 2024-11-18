@@ -6,27 +6,22 @@
 
 namespace pax
 {
-    enum Read_Err : isize {
-        READ_ERR_NONE     = 0,
-        READ_ERR_OVERFLOW = 1,
-        READ_ERR_SYNTAX   = 2,
-        READ_ERR_SYSTEM   = 3,
+    enum Read_Error : isize {
+        READ_ERROR_NONE     = 0,
+        READ_ERROR_OVERFLOW = 1,
+        READ_ERROR_SYSTEM   = 2,
 
-        READ_ERR_COUNT = 4,
+        READ_ERROR_COUNT = 3,
     };
 
-    struct Read_Res {
-        isize    bytes;
-        Read_Err error;
-        isize    system;
+    struct Read_Value {
+        isize      count;
+        Read_Error error;
+        isize      system;
     };
 
     struct Read {
-        Read_Res (*byte_func) (
-            void* self, byte* value
-        ) = 0;
-
-        Read_Res (*buff_func) (
+        Read_Value (*buff_func) (
             void* self, Buff* value
         ) = 0;
 
@@ -37,12 +32,9 @@ namespace pax
         void* self = 0;
     };
 
-    extern const Array<s8, READ_ERR_COUNT> READ_ERR_TITLE;
+    extern const Array<s8, READ_ERROR_COUNT> READ_ERROR_TITLE;
 
-    Read_Res
-    read_byte(const Read* read, byte* value);
-
-    Read_Res
+    Read_Value
     read_buff(const Read* read, Buff* value);
 
     void

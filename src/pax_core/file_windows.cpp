@@ -7,22 +7,16 @@
 
 namespace pax
 {
-    Write_Res
-    _file_write_byte(void* file, byte value);
-
-    Write_Res
+    Write_Value
     _file_write_s8(void* file, s8 value);
 
-    Write_Res
+    Write_Value
     _file_write_buff(void* file, Buff* value);
 
     void
     _file_flush(void* file);
 
-    Read_Res
-    _file_read_byte(void* file, byte* value);
-
-    Read_Res
+    Read_Value
     _file_read_buff(void* file, Buff* value);
 
     void
@@ -46,9 +40,10 @@ namespace pax
         "stdin", GetStdHandle(STD_INPUT_HANDLE),
     };
 
-    File_Err
+    File_Error
     file_open(File* file, s8 name)
     {
+        pax_trace();
         pax_guard(file != 0, "`file` is null");
 
         auto& self = *file;
@@ -62,15 +57,16 @@ namespace pax
             self.name   = name;
             self.handle = handle;
 
-            return FILE_ERR_NONE;
+            return FILE_ERROR_NONE;
         }
 
-        return (File_Err) GetLastError();
+        return (File_Error) GetLastError();
     }
 
-    File_Err
+    File_Error
     file_create(File* file, s8 name)
     {
+        pax_trace();
         pax_guard(file != 0, "`file` is null");
 
         auto& self = *file;
@@ -84,24 +80,25 @@ namespace pax
             self.name   = name;
             self.handle = handle;
 
-            return FILE_ERR_NONE;
+            return FILE_ERROR_NONE;
         }
 
-        return (File_Err) GetLastError();
+        return (File_Error) GetLastError();
     }
 
     void
     file_close(File* file)
     {
+        pax_trace();
         pax_guard(file != 0, "`file` is null");
 
         auto& self = *file;
 
         if ( self.handle == 0 ) return;
 
-        auto res = CloseHandle(self.handle);
+        auto code = CloseHandle(self.handle);
 
-        pax_guard(res != 0, "The operation failed");
+        pax_guard(code != 0, "The operation failed");
 
         self.name   = "";
         self.handle = 0;
@@ -112,7 +109,6 @@ namespace pax
     {
         Write self;
 
-        self.byte_func  = &_file_write_byte;
         self.s8_func    = &_file_write_s8;
         self.buff_func  = &_file_write_buff;
         self.flush_func = &_file_flush;
@@ -127,7 +123,6 @@ namespace pax
     {
         Read self;
 
-        self.byte_func  = &_file_read_byte;
         self.buff_func  = &_file_read_buff;
         self.close_func = &_file_close;
         self.self       = file;
@@ -135,29 +130,10 @@ namespace pax
         return self;
     }
 
-    Write_Res
-    file_write_byte(File* file, byte value)
-    {
-        pax_guard(file != 0, "`file` is null");
-
-        auto& self  = *file;
-        isize avail = 1;
-        isize count = 0;
-
-        pax_guard(self.handle != 0, "The file is closed");
-
-        auto res = WriteFile(self.handle, &value,
-            (DWORD) avail, (LPDWORD) &count, 0);
-
-        if ( res == 0 )
-            return {count, WRITE_ERR_SYSTEM, GetLastError()};
-
-        return {count, WRITE_ERR_NONE};
-    }
-
-    Write_Res
+    Write_Value
     file_write_s8(File* file, s8 value)
     {
+        pax_trace();
         pax_guard(file != 0, "`file` is null");
 
         auto& self  = *file;
@@ -166,19 +142,21 @@ namespace pax
 
         pax_guard(self.handle != 0, "The file is closed");
 
-        auto res = WriteFile(self.handle, value.addr,
+        auto code = WriteFile(self.handle, value.addr,
             (DWORD) avail, (LPDWORD) &count, 0);
 
-        if ( res == 0 )
-            return {count, WRITE_ERR_SYSTEM, GetLastError()};
+        if ( code == 0 )
+            return {count, WRITE_ERROR_SYSTEM, GetLastError()};
 
-        return {count, WRITE_ERR_NONE};
+        return {count, WRITE_ERROR_NONE};
     }
 
-    Write_Res
+    Write_Value
     file_write_buff(File* file, Buff* value)
     {
-        pax_guard(file != 0, "`file` is null");
+        pax_trace();
+        pax_guard(file  != 0, "`file` is null");
+        pax_guard(value != 0, "`value` is null");
 
         auto& self  = *file;
         isize avail = buff_size(value);
@@ -186,53 +164,38 @@ namespace pax
 
         pax_guard(self.handle != 0, "The file is closed");
 
-        auto res = WriteFile(self.handle, value->head,
+        auto code = WriteFile(self.handle, value->head,
             (DWORD) avail, (LPDWORD) &count, 0);
 
-        if ( res == 0 )
-            return {count, WRITE_ERR_SYSTEM, GetLastError()};
+        if ( code == 0 )
+            return {count, WRITE_ERROR_SYSTEM, GetLastError()};
 
-        value->curr = value->head;
+        value->head = value->addr;
+        value->tail = value->addr;
 
-        return {count, WRITE_ERR_NONE};
+        return {count, WRITE_ERROR_NONE};
     }
 
-    Read_Res
-    file_read_byte(File* file, byte* value)
-    {
-        pax_guard(file != 0, "`file` is null");
-
-        auto& self  = *file;
-        isize avail = 1;
-        isize count = 0;
-
-        auto res = ReadFile(self.handle, value,
-            (DWORD) avail, (LPDWORD) &count, 0);
-
-        if ( res == 0 )
-            return {count, READ_ERR_SYSTEM, GetLastError()};
-
-        return {count, READ_ERR_NONE};
-    }
-
-    Read_Res
+    Read_Value
     file_read_buff(File* file, Buff* value)
     {
+        pax_trace();
         pax_guard(file != 0, "`file` is null");
+        pax_guard(value != 0, "`value` is null");
 
         auto& self  = *file;
         isize avail = buff_avail(value);
         isize count = 0;
 
-        auto res = ReadFile(self.handle, value->curr,
+        auto code = ReadFile(self.handle, value->tail,
             (DWORD) avail, (LPDWORD) &count, 0);
 
-        if ( res == 0 )
-            return {count, READ_ERR_SYSTEM, GetLastError()};
+        if ( code == 0 )
+            return {count, READ_ERROR_SYSTEM, GetLastError()};
 
-        value->curr += count;
+        value->tail += count;
 
-        return {count, READ_ERR_NONE};
+        return {count, READ_ERROR_NONE};
     }
 
     //
@@ -241,19 +204,13 @@ namespace pax
     //
     //
 
-    Write_Res
-    _file_write_byte(void* file, byte value)
-    {
-        return file_write_byte((File*) file, value);
-    }
-
-    Write_Res
+    Write_Value
     _file_write_s8(void* file, s8 value)
     {
         return file_write_s8((File*) file, value);
     }
 
-    Write_Res
+    Write_Value
     _file_write_buff(void* file, Buff* value)
     {
         return file_write_buff((File*) file, value);
@@ -262,16 +219,11 @@ namespace pax
     void
     _file_flush(void* file)
     {
+        pax_trace();
         pax_guard(file != 0, "`file` is null");
     }
 
-    Read_Res
-    _file_read_byte(void* file, byte* value)
-    {
-        return file_read_byte((File*) file, value);
-    }
-
-    Read_Res
+    Read_Value
     _file_read_buff(void* file, Buff* value)
     {
         return file_read_buff((File*) file, value);
