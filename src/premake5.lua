@@ -9,13 +9,12 @@ project "pax_core"
     includedirs { "./" }
 
     files {
+        "pax_core/export.hpp",
+        "pax_core/system.hpp",
+        "pax_core/debug.hpp",
         "pax_core/types.hpp",
         "pax_core/types.cpp",
         "pax_core/array.hpp",
-        "pax_core/system.hpp",
-        "pax_core/debug.hpp",
-        "pax_core/report.hpp",
-        "pax_core/report.cpp",
         "pax_core/alloc.hpp",
         "pax_core/alloc.cpp",
         "pax_core/arena.hpp",
@@ -29,13 +28,17 @@ project "pax_core"
         "pax_core/buff.cpp",
         "pax_core/file.hpp",
         "pax_core/file.cpp",
+        "pax_core/report.hpp",
+        "pax_core/report.cpp",
+    }
+
+    local other = {
         "pax_core/format.hpp",
         "pax_core/format.cpp",
         "pax_core/match.hpp",
         "pax_core/match.cpp",
         "pax_core/parse.hpp",
         "pax_core/parse.cpp",
-        "pax_core/export.hpp",
     }
 
     filter { "system:windows" }

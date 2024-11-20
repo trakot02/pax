@@ -4,6 +4,7 @@
 #include <pax_core/types.hpp>
 #include <pax_core/array.hpp>
 #include <pax_core/alloc.hpp>
+#include <pax_core/base_alloc.hpp>
 
 namespace pax
 {
@@ -17,19 +18,13 @@ namespace pax
         ARENA_ERROR_COUNT = 3,
     };
 
-    struct Arena_Value {
-        Alloc_Info   info;
-        byte*        addr;
-        Arena_Error  error;
-    };
-
     struct Arena {
         Alloc       alloc;
         isize       size = 0;
         Arena_Node* list = 0;
     };
 
-    extern const Array<s8, ARENA_ERROR_COUNT> ARENA_ERROR_TITLE;
+    extern const Array<Str8, ARENA_ERROR_COUNT> ARENA_ERROR_TITLE;
 
     Arena
     arena_init(isize size, Alloc alloc = base_alloc());
@@ -37,11 +32,17 @@ namespace pax
     void
     arena_drop(Arena* arena);
 
-    Arena_Value
-    arena_request(Arena* arena, Alloc_Info info);
+    Arena_Error
+    arena_request(Arena* arena, Alloc_Value* value);
+
+    Arena_Error
+    arena_resize(Arena* arena, Alloc_Value* value);
 
     void
-    arena_release(Arena* arena);
+    arena_release(Arena* arena, Alloc_Value value);
+
+    void
+    arena_clear(Arena* arena);
 
     Alloc
     arena_set_alloc(Arena* arena, Alloc alloc);

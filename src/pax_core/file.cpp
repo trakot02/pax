@@ -9,9 +9,9 @@ namespace pax
     }
 
     Write_Value
-    stdout_write_s8(s8 value)
+    stdout_write_str8(Str8 value)
     {
-        return file_write_s8(&STDOUT, value);
+        return file_write_str8(&STDOUT, value);
     }
 
     Write_Value
@@ -27,9 +27,9 @@ namespace pax
     }
 
     Write_Value
-    stderr_write_s8(s8 value)
+    stderr_write_str8(Str8 value)
     {
-        return file_write_s8(&STDERR, value);
+        return file_write_str8(&STDERR, value);
     }
 
     Write_Value

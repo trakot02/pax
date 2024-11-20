@@ -6,7 +6,7 @@
 
 namespace pax
 {
-    template <class Type, isize Size>
+    template <class Type, isize CNT>
     struct Array {
         //
         //
@@ -14,10 +14,9 @@ namespace pax
         //
         //
 
-        static const isize size =
-            Size;
+        static const isize cnt = CNT;
 
-        Type addr[size];
+        Type ptr[CNT];
 
         //
         //
@@ -26,38 +25,36 @@ namespace pax
         //
 
         const Type&
-        operator[](isize index) const;
+        operator[](isize idx) const;
 
         Type&
-        operator[](isize index);
+        operator[](isize idx);
     };
 
     //
     //
-    // Implementation.
+    // Exposed.
     //
     //
 
-    template <class Type, isize Size>
+    template <class Type, isize CNT>
     const Type&
-    Array<Type, Size>::operator[](isize index) const
+    Array<Type, CNT>::operator[](isize idx) const
     {
-        pax_trace();
-        pax_guard(0 <= index && index < size,
-            "`index` is out of bounds");
+        pax_guard(0 <= idx && idx < cnt,
+            "`idx` is out of bounds");
 
-        return addr[index];
+        return ptr[idx];
     }
 
-    template <class Type, isize Size>
+    template <class Type, isize CNT>
     Type&
-    Array<Type, Size>::operator[](isize index)
+    Array<Type, CNT>::operator[](isize idx)
     {
-        pax_trace();
-        pax_guard(0 <= index && index < size,
-            "`index` is out of bounds");
+        pax_guard(0 <= idx && idx < cnt,
+            "`idx` is out of bounds");
 
-        return addr[index];
+        return ptr[idx];
     }
 } // namespace pax
 

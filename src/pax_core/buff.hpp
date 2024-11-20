@@ -2,72 +2,70 @@
 #define PAX_CORE_BUFF_HPP
 
 #include <pax_core/types.hpp>
+#include <pax_core/arena.hpp>
 #include <pax_core/write.hpp>
 #include <pax_core/read.hpp>
 
 namespace pax
 {
-    struct Arena;
-
     struct Buff {
-        byte* addr = 0;
-        isize size = 0;
+        byte* ptr  = 0;
+        isize cnt  = 0;
         byte* head = 0;
         byte* tail = 0;
     };
 
     Buff
-    buff_from(byte* addr, isize size);
+    buff_from(byte* ptr, isize cnt);
 
-    Buff
-    buff_init(Arena* arena, isize size);
-
-    isize
-    buff_size(const Buff* buff);
+    Arena_Error
+    buff_init(Buff* buf, Arena* arena, isize cnt);
 
     isize
-    buff_avail(const Buff* buff);
+    buff_size(const Buff* buf);
+
+    isize
+    buff_avail(const Buff* buf);
 
     void
-    buff_clear(Buff* buff);
+    buff_shift(Buff* buf);
 
     void
-    buff_fill(Buff* buff, byte value = 0);
+    buff_clear(Buff* buf);
 
     void
-    buff_fill_addr(Buff* buff, byte* value);
+    buff_fill(Buff* buf, byte value = 0);
 
     void
-    buff_shift(Buff* buff);
+    buff_fill_ptr(Buff* buf, byte* value);
 
     void
-    buff_trim(Buff* buff);
-
-    void
-    buff_trim_head(Buff* buff);
-
-    void
-    buff_trim_tail(Buff* buff);
+    buff_trim(Buff* buf);
 
     /*
     ???
-    buff_split(Buff* buff, ???, byte delim);
+    buff_split(Buff* buf, ???, byte delim);
     */
+    void
+    buff_trim_head(Buff* buf);
+
+    void
+    buff_trim_tail(Buff* buf);
 
     Write
-    buff_write(Buff* buff);
+    buff_write(Buff* buf);
 
     Read
-    buff_read(Buff* buff);
+    buff_read(Buff* buf);
 
     Write_Value
-    buff_write_s8(Buff* buff, s8 value);
+    buff_write_str8(Buff* buf, Str8 value);
 
     Write_Value
-    buff_write_buff(Buff* buff, Buff* value);
+    buff_write_buff(Buff* buf, Buff* value);
 
     Read_Value
-    buff_read_buff(Buff* buff, Buff* value);
+    buff_read_buff(Buff* buf, Buff* value);
 } // namespace pax
 
 #endif // PAX_CORE_BUFF_HPP

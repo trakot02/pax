@@ -88,58 +88,45 @@ namespace pax
 
     struct Buff;
 
-    struct s8 {
-        //
-        //
-        // Variables.
-        //
-        //
+    struct Str8 {
+        Str8(const byte* str);
 
-        const byte* addr = 0;
-        isize       size = 0;
+        Str8(const byte* str, isize cnt);
 
-        //
-        //
-        // Operations.
-        //
-        //
-
-        s8(const byte* string);
-
-        s8(const byte* string, isize size);
-
-        template <isize Size>
-        constexpr s8(const byte (&string)[Size]);
+        template <isize CNT>
+        constexpr Str8(const byte (&str)[CNT]);
 
         const byte&
-        operator[](isize index) const;
+        operator[](isize idx) const;
+
+        const byte* ptr = 0;
+        isize       cnt = 0;
     };
 
-    s8
-    s8_from(const Buff* buff);
+    Str8
+    str8_from(const Buff* buf);
 
-    s8
-    s8_trim(s8 string);
+    Str8
+    str8_trim(Str8 str);
 
-    s8
-    s8_trim_head(s8 string);
+    Str8
+    str8_trim_head(Str8 str);
 
-    s8
-    s8_trim_tail(s8 string);
+    Str8
+    str8_trim_tail(Str8 str);
 
-    static const isize WIDTH_S8 = pax_type_width(s8);
-    static const isize ALIGN_S8 = pax_type_align(s8);
+    static const isize WIDTH_STR8 = pax_type_width(Str8);
+    static const isize ALIGN_STR8 = pax_type_align(Str8);
 
     //
     //
-    // Implementation.
+    // Exposed.
     //
     //
 
-    template <isize Size>
-    constexpr s8::s8(const byte (&string)[Size])
-        : addr {string}
-        , size {Size - 1}
+    template <isize CNT>
+    constexpr Str8::Str8(const byte (&str)[CNT])
+        : ptr {str}, cnt {CNT - 1}
     {}
 } // namespace pax
 

@@ -4,41 +4,31 @@ namespace pax
 {
     //
     //
-    // Implementation.
+    // Exposed.
     //
     //
 
-    const Array<s8, READ_ERROR_COUNT> READ_ERROR_TITLE = {
+    const Array<Str8, READ_ERROR_COUNT> READ_ERROR_TITLE = {
         "READ_ERROR_NONE",
         "READ_ERROR_OVERFLOW",
         "READ_ERROR_SYSTEM",
     };
 
     Read_Value
-    read_buff(const Read* read, Buff* value)
+    read_buff(Read read, Buff* value)
     {
-        pax_trace();
-        pax_guard(read != 0, "`read` is null");
+        pax_guard(read.func_buff != 0,
+            "`func_buff` is null");
 
-        auto& self = *read;
-        auto* func = self.buff_func;
-
-        pax_guard(func != 0, "The function is null");
-
-        return (*func)(self.self, value);
+        return (*read.func_buff)(read.self, value);
     }
 
     void
-    read_close(const Read* read)
+    read_close(Read read)
     {
-        pax_trace();
-        pax_guard(read != 0, "`read` is null");
+        pax_guard(read.func_close != 0,
+            "`func_close` is null");
 
-        auto& self = *read;
-        auto* func = self.close_func;
-
-        pax_guard(func != 0, "The function is null");
-
-        return (*func)(self.self);
+        (*read.func_close)(read.self);
     }
 } // namespace pax

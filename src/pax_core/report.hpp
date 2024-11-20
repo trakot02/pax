@@ -39,9 +39,9 @@ namespace pax
     };
 
     struct Report {
-        s8    text;
-        s8    func;
-        s8    file;
+        Str8  text;
+        Str8  func;
+        Str8  file;
         usize line;
     };
 
@@ -78,7 +78,7 @@ namespace pax
     report_panic(Report report);
 
     void
-    report_guard(s8 expr, Report report);
+    report_guard(Str8 expr, Report report);
 } // namespace pax
 
 #define pax_fatal(text) \

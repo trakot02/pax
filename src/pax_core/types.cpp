@@ -6,112 +6,114 @@ namespace pax
 {
     //
     //
-    // Implementation.
+    // Exposed.
     //
     //
 
-    s8::s8(const byte* string)
-        : addr {0}
-        , size {0}
+    Str8::Str8(const byte* str)
+        : ptr {0}, cnt {0}
     {
-        isize count = 0;
+        isize idx = 0;
 
-        if ( string == 0 ) return;
+        if ( str == 0 ) return;
 
-        while ( string[count] != 0 )
-            count += 1;
+        while ( str[idx] != 0 )
+            idx += 1;
 
-        addr = string;
-        size = count;
+        ptr = str;
+        cnt = idx;
     }
 
-    s8::s8(const byte* string, isize size)
-        : addr {0}
-        , size {0}
+    Str8::Str8(const byte* str, isize cnt)
+        : ptr {0}, cnt {0}
     {
-        isize count = 0;
+        isize idx = 0;
 
-        if ( string == 0 ) return;
+        if ( str == 0 ) return;
 
-        while ( string[count] != 0 && count < size )
-            count += 1;
+        while ( str[idx] != 0 && idx < cnt )
+            idx += 1;
 
-        addr = string;
-        size = count;
+        ptr = str;
+        cnt = idx;
     }
 
     const byte&
-    s8::operator[](isize index) const
+    Str8::operator[](isize idx) const
     {
-        pax_trace();
-        pax_guard(0 <= index && index < size,
-            "`index` is out of bounds");
+        pax_guard(0 <= idx && idx < cnt,
+            "`idx` is out of bounds");
 
-        return addr[index];
+        return ptr[idx];
     }
 
-    s8
-    s8_from(const Buff* buff)
+    Str8
+    str8_from(const Buff* buf)
     {
-        s8    self = "";
-        isize size = buff_size(buff);
+        Str8 str = "";
 
-        self.addr = buff->head;
-        self.size = size;
+        if ( buf == 0 ) return str;
 
-        return self;
+        str.ptr = buf->head;
+        str.cnt = buff_size(buf);
+
+        return str;
     }
 
-    s8
-    s8_trim(s8 string)
+    Str8
+    str8_trim(Str8 str)
     {
-        return s8_trim_tail(s8_trim_head(string));
+        str = str8_trim_head(str);
+        str = str8_trim_tail(str);
+
+        return str;
     }
 
-    s8
-    s8_trim_head(s8 string)
+    Str8
+    str8_trim_head(Str8 str)
     {
-        auto* head = string.addr;
-        auto* tail = string.addr + string.size;
-        auto* addr = string.addr;
+        auto* head = str.ptr;
+        auto* tail = str.ptr + str.cnt;
+        auto* ptr  = head;
 
-        while ( addr < tail ) {
-            byte temp = addr[0];
+        while ( ptr < tail ) {
+            byte val = ptr[0];
 
-            if ( temp != '\t' && temp != '\n' &&
-                 temp != '\v' && temp != '\f' &&
-                 temp != '\r' && temp != ' ' )
+            if ( val != '\t' && val != '\n' &&
+                 val != '\v' && val != '\f' &&
+                 val != '\r' && val != ' ' )
                 break;
 
-            addr += 1;
+            ptr += 1;
         }
 
-        string.size -= addr - head;
-        string.addr  = addr;
+        str.ptr = ptr;
+        str.cnt = tail - ptr;
 
-        return string;
+        return str;
     }
 
-    s8
-    s8_trim_tail(s8 string)
+    Str8
+    str8_trim_tail(Str8 str)
     {
-        auto* head = string.addr;
-        auto* tail = string.addr + string.size;
-        auto* addr = tail - 1;
+        auto* head = str.ptr;
+        auto* tail = str.ptr + str.cnt;
+        auto* ptr  = tail - 1;
 
-        while ( addr >= head ) {
-            byte temp = addr[0];
+        while ( ptr >= head ) {
+            byte val = ptr[0];
 
-            if ( temp != '\t' && temp != '\n' &&
-                 temp != '\v' && temp != '\f' &&
-                 temp != '\r' && temp != ' ' )
+            if ( val != '\t' && val != '\n' &&
+                 val != '\v' && val != '\f' &&
+                 val != '\r' && val != ' ' )
                 break;
 
-            addr -= 1;
+            ptr -= 1;
         }
 
-        string.size -= tail - (addr + 1);
+        str.ptr = head;
+        str.cnt = ptr - head + 1;
 
-        return string;
+        return str;
     }
 } // namespace pax

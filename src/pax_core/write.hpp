@@ -21,38 +21,38 @@ namespace pax
     };
 
     struct Write {
-        Write_Value (*s8_func) (
-            void* self, s8 value
+        void* self = 0;
+
+        Write_Value (*func_str8) (
+            void* self, Str8 value
         ) = 0;
 
-        Write_Value (*buff_func) (
+        Write_Value (*func_buff) (
             void* self, Buff* value
         ) = 0;
 
-        void (*flush_func) (
+        void (*func_flush) (
             void* self
         ) = 0;
 
-        void (*close_func) (
+        void (*func_close) (
             void* self
         ) = 0;
-
-        void* self = 0;
     };
 
-    extern const Array<s8, WRITE_ERROR_COUNT> WRITE_ERROR_TITLE;
+    extern const Array<Str8, WRITE_ERROR_COUNT> WRITE_ERROR_TITLE;
 
     Write_Value
-    write_s8(const Write* write, s8 value);
+    write_str8(Write write, Str8 value);
 
     Write_Value
-    write_buff(const Write* write, Buff* value);
+    write_buff(Write write, Buff* value);
 
     void
-    write_flush(const Write* write);
+    write_flush(Write write);
 
     void
-    write_close(const Write* write);
+    write_close(Write write);
 } // namespace pax
 
 #endif // PAX_CORE_WRITE_HPP

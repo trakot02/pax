@@ -14,9 +14,9 @@ namespace pax
         //
         //
 
-        Type* addr  = 0;
-        isize size  = 0;
-        isize limit = 0;
+        Type* ptr = 0;
+        isize cnt = 0;
+        isize cap = 0;
 
         //
         //
@@ -25,23 +25,20 @@ namespace pax
         //
 
         const Type&
-        operator[](isize index) const;
+        operator[](isize idx) const;
 
         Type&
-        operator[](isize index);
+        operator[](isize idx);
     };
 
-    template <class Type, isize Size>
+    template <class Type, isize CNT>
     Slice<Type>
-    slice_from(Array<Type, Size>&& value);
+    slice_from_mut(Array<Type, CNT>&& array);
 
-    template <class Type, isize Size>
+    template <class Type, isize CNT>
     Slice<const Type>
-    slice_from(const Array<Type, Size>& value);
+    slice_from(const Array<Type, CNT>& array);
 
-    template <class Type, isize Size>
-    Slice<Type>
-    slice_from(Array<Type, Size>& value);
 /*
     template <class Type>
     void
@@ -90,68 +87,56 @@ namespace pax
 
     //
     //
-    // Implementation.
+    // Exposed.
     //
     //
 
     template <class Type>
     const Type&
-    Slice<Type>::operator[](isize index) const
+    Slice<Type>::operator[](isize idx) const
     {
-        pax_guard(0 <= index && index < size,
-            "`index` is out of bounds");
+        pax_guard(0 <= idx && idx < cnt,
+            "`idx` is out of bounds");
 
-        return addr[index];
+        return ptr[idx];
     }
 
     template <class Type>
     Type&
-    Slice<Type>::operator[](isize index)
+    Slice<Type>::operator[](isize idx)
     {
-        pax_guard(0 <= index && index < size,
-            "`index` is out of bounds");
+        pax_guard(0 <= idx && idx < cnt,
+            "`idx` is out of bounds");
 
-        return addr[index];
+        return ptr[idx];
     }
 
-    template <class Type, isize Size>
+    template <class Type, isize CNT>
     Slice<Type>
-    slice_from(Array<Type, Size>&& value)
+    slice_from_mut(Array<Type, CNT>&& array)
     {
-        Slice<Type> self;
+        Slice<Type> slice;
 
-        self.addr  = value.addr;
-        self.size  = value.size;
-        self.limit = value.size;
+        slice.ptr = array.ptr;
+        slice.cnt = array.cnt;
+        slice.cap = array.cnt;
 
-        return self;
+        return slice;
     }
 
-    template <class Type, isize Size>
+    template <class Type, isize CNT>
     Slice<const Type>
-    slice_from(const Array<Type, Size>& value)
+    slice_from(const Array<Type, CNT>& array)
     {
-        Slice<const Type> self;
+        Slice<const Type> slice;
 
-        self.addr  = value.addr;
-        self.size  = value.size;
-        self.limit = value.size;
+        slice.ptr = array.ptr;
+        slice.cnt = array.cnt;
+        slice.cap = array.cnt;
 
-        return self;
+        return slice;
     }
 
-    template <class Type, isize Size>
-    Slice<Type>
-    slice_from(Array<Type, Size>& value)
-    {
-        Slice<Type> self;
-
-        self.addr  = value.addr;
-        self.size  = value.size;
-        self.limit = value.size;
-
-        return self;
-    }
 /*
     template <class Type>
     void

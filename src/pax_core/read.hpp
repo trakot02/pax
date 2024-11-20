@@ -21,24 +21,25 @@ namespace pax
     };
 
     struct Read {
-        Read_Value (*buff_func) (
+        void* self = 0;
+
+        Read_Value (*func_buff) (
             void* self, Buff* value
         ) = 0;
 
-        void (*close_func) (
+        void (*func_close) (
             void* self
         ) = 0;
 
-        void* self = 0;
     };
 
-    extern const Array<s8, READ_ERROR_COUNT> READ_ERROR_TITLE;
+    extern const Array<Str8, READ_ERROR_COUNT> READ_ERROR_TITLE;
 
     Read_Value
-    read_buff(const Read* read, Buff* value);
+    read_buff(Read read, Buff* value);
 
     void
-    read_close(const Read* read);
+    read_close(Read read);
 } // namespace pax
 
 #endif // PAX_CORE_READ_HPP

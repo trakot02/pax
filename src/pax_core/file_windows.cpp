@@ -8,7 +8,7 @@
 namespace pax
 {
     Write_Value
-    _file_write_s8(void* file, s8 value);
+    _file_write_str8(void* file, Str8 value);
 
     Write_Value
     _file_write_buff(void* file, Buff* value);
@@ -41,7 +41,7 @@ namespace pax
     };
 
     File_Error
-    file_open(File* file, s8 name)
+    file_open(File* file, Str8 name)
     {
         pax_trace();
         pax_guard(file != 0, "`file` is null");
@@ -50,7 +50,7 @@ namespace pax
 
         pax_guard(self.handle == 0, "The file is already open");
 
-        void* handle = CreateFileA(name.addr, GENERIC_READ,
+        void* handle = CreateFileA(name.ptr, GENERIC_READ,
             0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 
         if ( handle != INVALID_HANDLE_VALUE ) {
@@ -64,7 +64,7 @@ namespace pax
     }
 
     File_Error
-    file_create(File* file, s8 name)
+    file_create(File* file, Str8 name)
     {
         pax_trace();
         pax_guard(file != 0, "`file` is null");
@@ -73,7 +73,7 @@ namespace pax
 
         pax_guard(self.handle == 0, "The file is already open");
 
-        void* handle = CreateFileA(name.addr, GENERIC_WRITE,
+        void* handle = CreateFileA(name.ptr, GENERIC_WRITE,
             0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 
         if ( handle != INVALID_HANDLE_VALUE ) {
@@ -109,10 +109,10 @@ namespace pax
     {
         Write self;
 
-        self.s8_func    = &_file_write_s8;
-        self.buff_func  = &_file_write_buff;
-        self.flush_func = &_file_flush;
-        self.close_func = &_file_close;
+        self.func_s8    = &_file_write_str8;
+        self.func_buff  = &_file_write_buff;
+        self.func_flush = &_file_flush;
+        self.func_close = &_file_close;
         self.self       = file;
 
         return self;
@@ -123,26 +123,26 @@ namespace pax
     {
         Read self;
 
-        self.buff_func  = &_file_read_buff;
-        self.close_func = &_file_close;
+        self.func_buff  = &_file_read_buff;
+        self.func_close = &_file_close;
         self.self       = file;
 
         return self;
     }
 
     Write_Value
-    file_write_s8(File* file, s8 value)
+    file_write_str8(File* file, Str8 value)
     {
         pax_trace();
         pax_guard(file != 0, "`file` is null");
 
         auto& self  = *file;
-        isize avail = value.size;
+        isize avail = value.cnt;
         isize count = 0;
 
         pax_guard(self.handle != 0, "The file is closed");
 
-        auto code = WriteFile(self.handle, value.addr,
+        auto code = WriteFile(self.handle, value.ptr,
             (DWORD) avail, (LPDWORD) &count, 0);
 
         if ( code == 0 )
@@ -170,8 +170,8 @@ namespace pax
         if ( code == 0 )
             return {count, WRITE_ERROR_SYSTEM, GetLastError()};
 
-        value->head = value->addr;
-        value->tail = value->addr;
+        value->head = value->ptr;
+        value->tail = value->ptr;
 
         return {count, WRITE_ERROR_NONE};
     }
@@ -205,9 +205,9 @@ namespace pax
     //
 
     Write_Value
-    _file_write_s8(void* file, s8 value)
+    _file_write_str8(void* file, Str8 value)
     {
-        return file_write_s8((File*) file, value);
+        return file_write_str8((File*) file, value);
     }
 
     Write_Value

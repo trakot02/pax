@@ -2,26 +2,15 @@
 
 using namespace pax;
 
-Match_Value
-match_u64(Buff* buff, s8* token)
-{
-
-}
+static Arena arena = arena_init(1000);
 
 int
 main(int argc, char* argv[])
 {
-    auto arena = arena_init(200);
-    auto buff  = buff_init(&arena, arena.size);
+    Str8 text =
+        "[User]\n"
+        "name = \"Roberto\"\n"
+        "lang = \"IT\"\n";
 
-    buff_write_s8(&buff, "[User\n");
-
-    s8 token = "";
-
-    if ( match_exact(&buff, 0, "[").error ||
-         match_alpha(&buff, 0).error ||
-         match_exact(&buff, 0, "]").error )
-        return 1;
-
-    stdout_write_s8("Success\n");
+    auto buff = buff_init(&arena, arena.size);
 }

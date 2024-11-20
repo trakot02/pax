@@ -27,10 +27,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[31m[FATAL]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[31m[FATAL]\x1b[0m     '%.*s'.\n",
-            (int) report.func.size, report.func.addr,
-            (int) report.file.size, report.file.addr,
+            (int) report.func.cnt, report.func.ptr,
+            (int) report.file.cnt, report.file.ptr,
             (int) report.line,
-            (int) report.text.size, report.text.addr
+            (int) report.text.cnt, report.text.ptr
         );
     }
 
@@ -42,10 +42,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[31m[ERROR]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[31m[ERROR]\x1b[0m     '%.*s'.\n",
-            (int) report.func.size, report.func.addr,
-            (int) report.file.size, report.file.addr,
+            (int) report.func.cnt, report.func.ptr,
+            (int) report.file.cnt, report.file.ptr,
             (int) report.line,
-            (int) report.text.size, report.text.addr
+            (int) report.text.cnt, report.text.ptr
         );
     }
 
@@ -57,10 +57,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[33m[WARNING]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[33m[WARNING]\x1b[0m     '%.*s'.\n",
-            (int) report.func.size, report.func.addr,
-            (int) report.file.size, report.file.addr,
+            (int) report.func.cnt, report.func.ptr,
+            (int) report.file.cnt, report.file.ptr,
             (int) report.line,
-            (int) report.text.size, report.text.addr
+            (int) report.text.cnt, report.text.ptr
         );
     }
 
@@ -72,10 +72,10 @@ namespace pax
         fprintf(stderr,
             "[MESSAGE] from '%.*s' at {%.*s, %i}:\n"
             "[MESSAGE]     '%.*s'.\n",
-            (int) report.func.size, report.func.addr,
-            (int) report.file.size, report.file.addr,
+            (int) report.func.cnt, report.func.ptr,
+            (int) report.file.cnt, report.file.ptr,
             (int) report.line,
-            (int) report.text.size, report.text.addr
+            (int) report.text.cnt, report.text.ptr
         );
     }
 
@@ -87,10 +87,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[32m[SUCCESS]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[32m[SUCCESS]\x1b[0m     '%.*s'.\n",
-            (int) report.func.size, report.func.addr,
-            (int) report.file.size, report.file.addr,
+            (int) report.func.cnt, report.func.ptr,
+            (int) report.file.cnt, report.file.ptr,
             (int) report.line,
-            (int) report.text.size, report.text.addr
+            (int) report.text.cnt, report.text.ptr
         );
     }
 
@@ -102,10 +102,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[34m[DEBUG]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[34m[DEBUG]\x1b[0m     '%.*s'.\n",
-            (int) report.func.size, report.func.addr,
-            (int) report.file.size, report.file.addr,
+            (int) report.func.cnt, report.func.ptr,
+            (int) report.file.cnt, report.file.ptr,
             (int) report.line,
-            (int) report.text.size, report.text.addr
+            (int) report.text.cnt, report.text.ptr
         );
     }
 
@@ -116,8 +116,8 @@ namespace pax
 
         fprintf(stderr,
             "\x1b[34m[TRACE]\x1b[0m from '%.*s' at {%.*s, %i}\n",
-            (int) report.func.size, report.func.addr,
-            (int) report.file.size, report.file.addr,
+            (int) report.func.cnt, report.func.ptr,
+            (int) report.file.cnt, report.file.ptr,
             (int) report.line
         );
     }
@@ -130,17 +130,17 @@ namespace pax
         fprintf(stderr,
             "\x1b[35m[PANIC]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[35m[PANIC]\x1b[0m     '%.*s'.\n",
-            (int) report.func.size, report.func.addr,
-            (int) report.file.size, report.file.addr,
+            (int) report.func.cnt, report.func.ptr,
+            (int) report.file.cnt, report.file.ptr,
             (int) report.line,
-            (int) report.text.size, report.text.addr
+            (int) report.text.cnt, report.text.ptr
         );
 
         raise(SIGABRT);
     }
 
     void
-    report_guard(s8 expr, Report report)
+    report_guard(Str8 expr, Report report)
     {
         if ( REPORT_GUARD != REPORT_GUARD_TRUE ) return;
 
@@ -149,10 +149,10 @@ namespace pax
             "\x1b[36m[GUARD]\x1b[0m     guard '%.*s' failed.\n"
             "\x1b[36m[GUARD]\x1b[0m\n"
             "\x1b[36m[GUARD]\x1b[0m '%.*s'.\n",
-            (int) report.func.size, report.func.addr,
-            (int) report.file.size, report.file.addr,
-            (int) report.line, (int) expr.size, expr.addr,
-            (int) report.text.size, report.text.addr
+            (int) report.func.cnt, report.func.ptr,
+            (int) report.file.cnt, report.file.ptr,
+            (int) report.line, (int) expr.cnt, expr.ptr,
+            (int) report.text.cnt, report.text.ptr
         );
     }
 } // namespace pax

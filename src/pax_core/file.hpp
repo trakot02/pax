@@ -21,7 +21,7 @@ namespace pax
     stdout_write();
 
     Write_Value
-    stdout_write_s8(s8 value);
+    stdout_write_str8(Str8 value);
 
     Write_Value
     stdout_write_buff(Buff* value);
@@ -30,7 +30,7 @@ namespace pax
     stderr_write();
 
     Write_Value
-    stderr_write_s8(s8 value);
+    stderr_write_str8(Str8 value);
 
     Write_Value
     stderr_write_buff(Buff* value);

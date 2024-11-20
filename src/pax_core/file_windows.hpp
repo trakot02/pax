@@ -17,7 +17,7 @@ namespace pax
     };
 
     struct File {
-        s8    name   = "";
+        Str8  name   = "";
         void* handle = 0;
     };
 
@@ -30,7 +30,7 @@ namespace pax
     // it returns an error.
     //
     File_Error
-    file_open(File* file, s8 name);
+    file_open(File* file, Str8 name);
 
     //
     // Opens a file in write mode. If the file does not exist
@@ -38,7 +38,7 @@ namespace pax
     // truncated.
     //
     File_Error
-    file_create(File* file, s8 name);
+    file_create(File* file, Str8 name);
 
     void
     file_close(File* file);
@@ -50,7 +50,7 @@ namespace pax
     file_read(File* file);
 
     Write_Value
-    file_write_s8(File* file, s8 value);
+    file_write_str8(File* file, Str8 value);
 
     Write_Value
     file_write_buff(File* file, Buff* value);
