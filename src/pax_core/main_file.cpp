@@ -7,48 +7,65 @@
 
 using namespace pax;
 
-static Arena arena = arena_init(2000);
+static Arena arena = arena_init(100);
 
-isize
-match_column(Buff* buffer, Str8* token, isize* col, isize* row)
+enum Match_Error : isize {
+    MATCH_ERROR_NONE = 0,
+    MATCH_ERROR_SOME = 1,
+
+    MATCH_ERROR_COUNT = 2,
+};
+
+struct CSV_Match {
+    isize       line;
+    isize       count;
+    Match_Error error;
+};
+
+CSV_Match
+match_column(Buff* buffer, Str8* token)
 {
-    if ( buffer == 0 ) return 0;
+    pax_guard(buffer != 0, "`buffer` is null");
 
-    isize escap = 0;
-    isize extra = 0;
+    isize state = 0;
+    isize count = 0;
+    isize line  = 0;
 
     byte* pntr = buffer->head;
 
-    do {
-        if ( pntr >= buffer->tail ) return -1;
+    while ( true ) {
+        if ( pntr >= buffer->tail )
+            return {0, 0, MATCH_ERROR_SOME};
 
-        if ( escap == 0 ) {
-            if ( *pntr == 0x0a || *pntr == 0x2c ) {
-                if ( col != 0 && row != 0 ) {
-                    *col += 1;
+        if ( state == 1 && *pntr == 0x22 )
+            state = 0, pntr += 1;
 
-                    if ( *pntr == 0x0a )
-                        *col = 0, *row += 1;
-                }
+        if ( pntr >= buffer->tail )
+            return {0, 0, MATCH_ERROR_SOME};
 
-                extra = 1;
+        if ( state == 0 ) {
+            line = (*pntr == 0x0a);
+
+            if ( *pntr == 0x0a || *pntr == 0x2c )
                 break;
-            }
+
+            if ( *pntr == 0x22 ) state = 1;
         }
 
         pntr += 1;
-    } while ( true );
+    }
 
-    isize count = pntr - buffer->head;
+    pntr  += 1;
+    count  = pntr - buffer->head;
 
     if ( token != 0 ) {
         token->block = buffer->head;
-        token->count = count;
+        token->count = count - 1;
     }
 
-    buffer->head = pntr + extra;
+    buffer->head = pntr;
 
-    return count + extra;
+    return {line, count, MATCH_ERROR_NONE};
 }
 
 int
@@ -77,7 +94,7 @@ main(int argc, char* argv[])
         return 1;
     }
 
-    auto write = buff_write_str8(&buff, "/test.csv");
+    auto write = buff_write_str8(&buff, "/MOCK_DATA.csv");
 
     if ( write.error != WRITE_ERROR_NONE ) {
         pax_fatal("Unable to read file name");
@@ -96,7 +113,11 @@ main(int argc, char* argv[])
 
     buff_clear(&buff);
 
-    do {
+    isize col   = 0;
+    isize row   = 0;
+    Str8  token = "";
+
+    while ( true ) {
         auto read = file_read_buff(&file, &buff);
 
         if ( read.count == 0 ) {
@@ -104,25 +125,32 @@ main(int argc, char* argv[])
             break;
         }
 
-        isize count = 0;
-        isize col   = 0;
-        isize row   = 0;
-        Str8  token = "";
+        while ( true ) {
+            auto match = match_column(&buff, &token);
 
-        do {
-            printf("<%i, %i> -> ", (int) col, (int) row);
+            isize c = col;
+            isize r = row;
 
-            count = match_column(&buff, &token, &col, &row);
+            if ( match.error != MATCH_ERROR_NONE )
+                break;
 
-            if ( count > 0 ) {
-                printf("'%.*s' (%i)\n",
-                    (int) token.count, token.block, (int) count);
-            }
-        } while ( count > 0 );
+            col += 1;
+
+            if ( match.line != 0 )
+                col = 0, row += 1;
+
+            token = str8_trim(token);
+
+            printf("<%i, %i> -> '%.*s' (%i)\n", (int) c, (int) r,
+                (int) token.count, token.block, (int) match.count);
+        }
 
         buff_shift(&buff);
-    } while ( true );
+    }
 
     if ( error != READ_ERROR_NONE )
         pax_fatal("Unable to read from file");
+
+    if ( buff_size(&buff) != 0 )
+        pax_fatal("Wrong file");
 }
