@@ -18,7 +18,7 @@ namespace pax
     read_buff(Read read, Buff* value)
     {
         pax_guard(read.func_buff != 0,
-            "`func_buff` is null");
+            "`read.func_buff` is null");
 
         return (*read.func_buff)(read.self, value);
     }
@@ -27,7 +27,7 @@ namespace pax
     read_close(Read read)
     {
         pax_guard(read.func_close != 0,
-            "`func_close` is null");
+            "`read.func_close` is null");
 
         (*read.func_close)(read.self);
     }

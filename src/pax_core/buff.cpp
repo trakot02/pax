@@ -6,19 +6,19 @@
 namespace pax
 {
     Write_Value
-    _buff_write_str8(void* buf, Str8 value);
+    _buff_write_str8(void* buffer, Str8 value);
 
     Write_Value
-    _buff_write_buff(void* buf, Buff* value);
+    _buff_write_buff(void* buffer, Buff* value);
 
     void
-    _buff_flush(void* buf);
+    _buff_flush(void* buffer);
 
     Read_Value
-    _buff_read_buff(void* buf, Buff* value);
+    _buff_read_buff(void* buffer, Buff* value);
 
     void
-    _buff_close(void* buf);
+    _buff_close(void* buffer);
 
     //
     //
@@ -27,171 +27,162 @@ namespace pax
     //
 
     Buff
-    buff_from(byte* ptr, isize cnt)
+    buff_from(byte* block, isize count)
     {
-        pax_guard(cnt >= 0, "`cnt` is negative");
+        pax_guard(count >= 0, "`count` is negative");
 
-        Buff buf;
+        Buff buffer;
 
-        if ( ptr == 0 || cnt == 0 )
-            return buf;
+        if ( block == 0 || count == 0 )
+            return buffer;
 
-        buf.ptr  = ptr;
-        buf.cnt  = cnt;
-        buf.head = ptr;
-        buf.tail = ptr;
+        buffer.block = block;
+        buffer.count = count;
+        buffer.head  = block;
+        buffer.tail  = block;
 
-        return buf;
+        return buffer;
     }
 
     Arena_Error
-    buff_init(Buff* buf, Arena* arena, isize cnt)
+    buff_init(Buff* buffer, Arena* arena, isize count)
     {
-        pax_guard(buf != 0, "`buf` is null");
-        pax_guard(cnt >= 0, "`cnt` is negative");
+        pax_guard(buffer != 0, "`buffer` is null");
+        pax_guard(count  >= 0, "`count` is negative");
 
-        isize width = WIDTH_BYTE;
-        isize align = ALIGN_BYTE;
-
-        Alloc_Value value = {width, align, cnt};
+        Alloc_Value value = {
+            WIDTH_BYTE, ALIGN_BYTE, count
+        };
 
         auto error = arena_request(arena, &value);
 
         if ( error != ARENA_ERROR_NONE )
             return error;
 
-        if ( value.ptr != 0 ) {
-            buf->ptr  = value.ptr;
-            buf->cnt  = value.cnt;
-            buf->head = value.ptr;
-            buf->tail = value.ptr;
+        if ( value.block != 0 ) {
+            buffer->block = value.block;
+            buffer->count = value.count;
+            buffer->head  = value.block;
+            buffer->tail  = value.block;
         }
 
         return ARENA_ERROR_NONE;
     }
 
     isize
-    buff_size(const Buff* buf)
+    buff_size(const Buff* buffer)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
-        return buf->tail - buf->head;
+        return buffer->tail - buffer->head;
     }
 
     isize
-    buff_avail(const Buff* buf)
+    buff_avail(const Buff* buffer)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
-        return (buf->ptr + buf->cnt) - buf->tail;
+        return (buffer->block + buffer->count) - buffer->tail;
     }
 
     void
-    buff_shift(Buff* buf)
+    buff_shift(Buff* buffer)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
-        isize size = buff_size(buf);
+        isize size = buff_size(buffer);
 
         for ( isize i = 0; i < size; i += 1 )
-            buf->ptr[i] = buf->head[i];
+            buffer->block[i] = buffer->head[i];
 
-        buf->head = buf->ptr;
-        buf->tail = buf->ptr + size;
+        buffer->head = buffer->block;
+        buffer->tail = buffer->block + size;
     }
 
     void
-    buff_clear(Buff* buf)
+    buff_clear(Buff* buffer)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
-        buf->head = buf->ptr;
-        buf->tail = buf->ptr;
+        buffer->head = buffer->block;
+        buffer->tail = buffer->block;
     }
 
     void
-    buff_fill(Buff* buf, byte value)
+    buff_fill(Buff* buffer, byte value)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
-        isize avail = buff_avail(buf);
+        isize avail = buff_avail(buffer);
 
         for ( isize i = 0; i < avail; i += 1 )
-            buf->tail[i] = value;
+            buffer->tail[i] = value;
 
-        buf->tail += avail;
+        buffer->tail += avail;
     }
 
     void
-    buff_fill_ptr(Buff* buf, byte* value)
+    buff_fill_ptr(Buff* buffer, byte* value)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
         if ( value == 0 ) return;
 
-        isize avail = buff_avail(buf);
+        isize avail = buff_avail(buffer);
 
         for ( isize i = 0; i < avail; i += 1 )
-            buf->tail[i] = value[i];
+            buffer->tail[i] = value[i];
 
-        buf->tail += avail;
+        buffer->tail += avail;
     }
 
     void
-    buff_trim(Buff* buf)
+    buff_trim(Buff* buffer)
     {
-        buff_trim_head(buf);
-        buff_trim_tail(buf);
+        buff_trim_head(buffer);
+        buff_trim_tail(buffer);
     }
 
     void
-    buff_trim_head(Buff* buf)
+    buff_trim_head(Buff* buffer)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
-        auto* ptr = buf->head;
+        auto* pntr = buffer->head;
 
-        while ( ptr < buf->tail ) {
-            byte val = ptr[0];
-
-            if ( val != '\t' && val != '\n' &&
-                 val != '\v' && val != '\f' &&
-                 val != '\r' && val != ' ' )
+        while ( pntr < buffer->tail ) {
+            if ( (*pntr < 0x09 || *pntr > 0x0d) && *pntr != 0x20 )
                 break;
 
-            ptr += 1;
+            pntr += 1;
         }
 
-        buf->head = ptr;
+        buffer->head = pntr;
     }
 
     void
-    buff_trim_tail(Buff* buf)
+    buff_trim_tail(Buff* buffer)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
-        byte* ptr = buf->tail - 1;
+        byte* pntr = buffer->tail;
 
-        while ( ptr >= buf->head ) {
-            byte val = ptr[0];
+        do {
+            pntr -= 1;
 
-            if ( val != '\t' && val != '\n' &&
-                 val != '\v' && val != '\f' &&
-                 val != '\r' && val != ' ' )
+            if ( (*pntr < 0x09 || *pntr > 0x0d) && *pntr != 0x20 )
                 break;
+        } while ( pntr >= buffer->head );
 
-            ptr -= 1;
-        }
-
-        buf->tail = ptr + 1;
+        buffer->tail = pntr + 1;
     }
 
     Write
-    buff_write(Buff* buf)
+    buff_write(Buff* buffer)
     {
         Write write;
 
-        write.self = buf;
+        write.self = buffer;
 
         write.func_str8  = &_buff_write_str8;
         write.func_buff  = &_buff_write_buff;
@@ -202,11 +193,11 @@ namespace pax
     }
 
     Read
-    buff_read(Buff* buf)
+    buff_read(Buff* buffer)
     {
         Read read;
 
-        read.self = buf;
+        read.self = buffer;
 
         read.func_buff  = &_buff_read_buff;
         read.func_close = &_buff_close;
@@ -215,65 +206,65 @@ namespace pax
     }
 
     Write_Value
-    buff_write_str8(Buff* buf, Str8 value)
+    buff_write_str8(Buff* buffer, Str8 value)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
-        isize avail = buff_avail(buf);
-        isize count = value.cnt;
+        isize avail = buff_avail(buffer);
+        isize count = value.count;
 
         if ( count > avail )
-            return {avail, WRITE_ERROR_OVERFLOW};
+            return {0, WRITE_ERROR_OVERFLOW};
 
         for ( isize i = 0; i < count; i += 1 )
-            buf->tail[i] = value[i];
+            buffer->tail[i] = value[i];
 
-        buf->tail += count;
+        buffer->tail += count;
 
         return {count, WRITE_ERROR_NONE};
     }
 
     Write_Value
-    buff_write_buff(Buff* buf, Buff* value)
+    buff_write_buff(Buff* buffer, Buff* value)
     {
-        pax_guard(buf   != 0, "`buf` is null");
-        pax_guard(value != 0, "`value` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
+        pax_guard(value  != 0, "`value` is null");
 
-        isize avail = buff_avail(buf);
+        isize avail = buff_avail(buffer);
         isize count = buff_size(value);
 
         if ( count > avail )
-            return {avail, WRITE_ERROR_OVERFLOW};
+            return  {0, WRITE_ERROR_OVERFLOW};
 
         for ( isize i = 0; i < count; i += 1 )
-            buf->tail[i] = value->head[i];
+            buffer->tail[i] = value->head[i];
 
-        value->tail = value->ptr;
-        value->head = value->ptr;
+        value->tail = value->block;
+        value->head = value->block;
 
-        buf->tail += count;
+        buffer->tail += count;
 
         return {count, WRITE_ERROR_NONE};
     }
 
     Read_Value
-    buff_read_buff(Buff* buf, Buff* value)
+    buff_read_buff(Buff* buffer, Buff* value)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
 
         isize avail = buff_avail(value);
-        isize count = buff_size(buf);
+        isize count = buff_size(buffer);
 
         if ( count > avail )
-            return {avail, READ_ERROR_OVERFLOW};
+            return {0, READ_ERROR_OVERFLOW};
 
         for ( isize i = 0; i < count; i += 1 )
-            value->tail[i] = buf->head[i];
+            value->tail[i] = buffer->head[i];
 
         value->tail += count;
 
-        buf->head = buf->ptr;
-        buf->tail = buf->ptr;
+        buffer->head = buffer->block;
+        buffer->tail = buffer->block;
 
         return {count, READ_ERROR_NONE};
     }
@@ -285,32 +276,32 @@ namespace pax
     //
 
     Write_Value
-    _buff_write_str8(void* buf, Str8 value)
+    _buff_write_str8(void* buffer, Str8 value)
     {
-        return buff_write_str8((Buff*) buf, value);
+        return buff_write_str8((Buff*) buffer, value);
     }
 
     Write_Value
-    _buff_write_buff(void* buf, Buff* value)
+    _buff_write_buff(void* buffer, Buff* value)
     {
-        return buff_write_buff((Buff*) buf, value);
+        return buff_write_buff((Buff*) buffer, value);
     }
 
     void
-    _buff_flush(void* buf)
+    _buff_flush(void* buffer)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
     }
 
     Read_Value
-    _buff_read_buff(void* buf, Buff* value)
+    _buff_read_buff(void* buffer, Buff* value)
     {
-        return buff_read_buff((Buff*) buf, value);
+        return buff_read_buff((Buff*) buffer, value);
     }
 
     void
-    _buff_close(void* buf)
+    _buff_close(void* buffer)
     {
-        pax_guard(buf != 0, "`buf` is null");
+        pax_guard(buffer != 0, "`buffer` is null");
     }
 } // namespace pax

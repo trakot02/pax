@@ -1,0 +1,15 @@
+{
+    "name": "Roberto",
+    "lang": "IT",
+
+    "args": [
+        "--release=fast",
+        "--report=trace",
+    ],
+
+    "width":  320,
+    "height": 180,
+    "scale":  4,
+
+    "grid": 180,
+}

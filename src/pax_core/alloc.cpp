@@ -13,7 +13,7 @@ namespace pax
     alloc_request(Alloc alloc, Alloc_Value* value)
     {
         pax_guard(alloc.func_request != 0,
-            "`func_request` is null");
+            "`alloc.func_request` is null");
 
         (*alloc.func_request)(alloc.self, value);
     }
@@ -22,7 +22,7 @@ namespace pax
     alloc_release(Alloc alloc, Alloc_Value value)
     {
         pax_guard(alloc.func_release != 0,
-            "`func_release` is null");
+            "`alloc.func_release` is null");
 
         (*alloc.func_release)(alloc.self, value);
     }

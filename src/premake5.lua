@@ -17,6 +17,8 @@ project "pax_core"
         "pax_core/array.hpp",
         "pax_core/alloc.hpp",
         "pax_core/alloc.cpp",
+        "pax_core/base_alloc.hpp",
+        "pax_core/base_alloc.cpp",
         "pax_core/arena.hpp",
         "pax_core/arena.cpp",
         "pax_core/slice.hpp",

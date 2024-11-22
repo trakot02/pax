@@ -14,10 +14,10 @@ namespace pax
     static const isize WIDTH_ARENA_NODE = pax_type_width(Arena_Node);
 
     byte*
-    align_forw(byte* addr, isize align);
+    align_forw(byte* block, isize align);
 
     Arena_Node
-    arena_node_from(byte* ptr, isize cnt);
+    arena_node_from(byte* block, isize count);
 
     void
     arena_node_request(Arena_Node* node, Alloc_Value* value);
@@ -50,21 +50,21 @@ namespace pax
     };
 
     Arena
-    arena_init(isize size, Alloc alloc)
+    arena_init(isize count, Alloc alloc)
     {
-        pax_guard(size >= 0, "`size` isn't positive");
+        pax_guard(count >= 0, "`count` isn't positive");
 
         Arena arena;
 
-        if ( size > MAX_ISIZE - WIDTH_ARENA_NODE )
+        if ( count > MAX_ISIZE - WIDTH_ARENA_NODE )
             return arena;
 
         isize temp = 1024;
 
-        while ( temp < (size - WIDTH_ARENA_NODE) / 2 )
+        while ( temp < (count - WIDTH_ARENA_NODE) / 2 )
             temp *= 2;
 
-        arena.size  = temp - WIDTH_ARENA_NODE;
+        arena.count = temp - WIDTH_ARENA_NODE;
         arena.alloc = alloc;
 
         return arena;
@@ -92,14 +92,13 @@ namespace pax
 
         isize width = value->width;
         isize align = value->align;
-        isize cnt   = value->cnt;
-        byte* ptr   = 0;
+        isize count = value->count;
 
-        pax_guard(width > 0, "`width` isn't positive");
+        pax_guard(width > 0, "`value.width` isn't positive");
 
-        if ( cnt <= 0 ) return ARENA_ERROR_NONE;
+        if ( count <= 0 ) return ARENA_ERROR_NONE;
 
-        if ( width * cnt > arena->size )
+        if ( width * count > arena->count )
             return ARENA_ERROR_REQUEST_TOO_BIG;
 
         if ( arena->list == 0 )
@@ -107,13 +106,13 @@ namespace pax
 
         auto* node = arena->list;
 
-        while ( ptr == 0 ) {
+        while ( value->block == 0 ) {
             if ( node == 0 )
                 return ARENA_ERROR_OUT_OF_MEMORY;
 
             arena_node_request(node, value);
 
-            if ( value->ptr == 0 && node->next == 0 )
+            if ( value->block == 0 && node->next == 0 )
                 node->next = arena_attach(arena);
 
             node = node->next;
@@ -165,30 +164,30 @@ namespace pax
     //
 
     byte*
-    align_forw(byte* addr, isize align)
+    align_forw(byte* block, isize align)
     {
-        isize temp = (isize) addr;
+        isize temp = (isize) block;
         isize mask = align - 1;
 
         pax_guard(align > 0 && (align & (align - 1)) == 0,
             "`align` is not a power of two");
 
-        return addr + (-temp & mask);
+        return block + (-temp & mask);
     }
 
     Arena_Node
-    arena_node_from(byte* ptr, isize cnt)
+    arena_node_from(byte* block, isize count)
     {
-        pax_guard(cnt >= 0, "`cnt` is negative");
+        pax_guard(count >= 0, "`count` is negative");
 
         Arena_Node node;
 
-        if ( ptr == 0 || cnt == 0 )
+        if ( block == 0 || count == 0 )
             return node;
 
-        node.head = ptr;
-        node.tail = ptr + cnt;
-        node.curr = ptr;
+        node.head = block;
+        node.tail = block + count;
+        node.curr = block;
 
         return node;
     }
@@ -201,29 +200,28 @@ namespace pax
 
         isize width = value->width;
         isize align = value->align;
-        isize cnt   = value->cnt;
-        byte* ptr   = 0;
+        isize count = value->count;
 
-        pax_guard(width > 0, "`width` isn't positive");
+        pax_guard(width > 0, "`value.width` isn't positive");
 
-        if ( cnt <= 0 ) return;
+        if ( count <= 0 ) return;
 
-        ptr = align_forw(node->curr, align);
+        byte* block = align_forw(node->curr, align);
 
-        isize extra = ptr - node->curr;
-        isize avail = node->tail - ptr;
+        isize extra = block - node->curr;
+        isize avail = node->tail - block;
 
-        pax_guard((((usize) ptr) & (align - 1)) == 0,
+        pax_guard((((usize) block) & (align - 1)) == 0,
             "The result is not aligned properly");
 
-        if ( cnt <= (avail - extra) / width ) {
-            isize size = width * cnt;
-            auto  buf  = buff_from(ptr, size);
+        if ( count <= (avail - extra) / width ) {
+            isize total  = width * count;
+            auto  buffer = buff_from(block, total);
 
-            buff_fill(&buf);
+            buff_fill(&buffer);
 
-            node->curr = ptr + size;
-            value->ptr = ptr;
+            node->curr   = block + total;
+            value->block = block;
         }
     }
 
@@ -248,18 +246,18 @@ namespace pax
     {
         pax_guard(arena != 0, "`arena` is null");
 
-        isize width = arena->size + WIDTH_ARENA_NODE;
+        isize width = arena->count + WIDTH_ARENA_NODE;
         isize align = ALIGN_MAX;
 
         Alloc_Value value = {width, align, 1};
 
         alloc_request(arena->alloc, &value);
 
-        auto* node = (Arena_Node*) value.ptr;
-        auto* addr = value.ptr + WIDTH_ARENA_NODE;
+        auto* node  = (Arena_Node*) value.block;
+        auto* block = value.block + WIDTH_ARENA_NODE;
 
         if ( node != 0 )
-            *node = arena_node_from(addr, arena->size);
+            *node = arena_node_from(block, arena->count);
 
         return node;
     }
@@ -270,14 +268,14 @@ namespace pax
         pax_guard(arena != 0, "`arena` is null");
 
         auto* next  = node;
-        isize width = arena->size + WIDTH_ARENA_NODE;
+        isize width = arena->count + WIDTH_ARENA_NODE;
         isize align = ALIGN_MAX;
 
         Alloc_Value value = {width, align, 1};
 
         if ( node != 0 ) {
-            value.ptr = (byte*) node;
-            next      = node->next;
+            value.block = (byte*) node;
+            next        = node->next;
 
             alloc_release(arena->alloc, value);
         }

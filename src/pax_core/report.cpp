@@ -27,10 +27,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[31m[FATAL]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[31m[FATAL]\x1b[0m     '%.*s'.\n",
-            (int) report.func.cnt, report.func.ptr,
-            (int) report.file.cnt, report.file.ptr,
+            (int) report.func.count, report.func.block,
+            (int) report.file.count, report.file.block,
             (int) report.line,
-            (int) report.text.cnt, report.text.ptr
+            (int) report.text.count, report.text.block
         );
     }
 
@@ -42,10 +42,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[31m[ERROR]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[31m[ERROR]\x1b[0m     '%.*s'.\n",
-            (int) report.func.cnt, report.func.ptr,
-            (int) report.file.cnt, report.file.ptr,
+            (int) report.func.count, report.func.block,
+            (int) report.file.count, report.file.block,
             (int) report.line,
-            (int) report.text.cnt, report.text.ptr
+            (int) report.text.count, report.text.block
         );
     }
 
@@ -57,10 +57,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[33m[WARNING]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[33m[WARNING]\x1b[0m     '%.*s'.\n",
-            (int) report.func.cnt, report.func.ptr,
-            (int) report.file.cnt, report.file.ptr,
+            (int) report.func.count, report.func.block,
+            (int) report.file.count, report.file.block,
             (int) report.line,
-            (int) report.text.cnt, report.text.ptr
+            (int) report.text.count, report.text.block
         );
     }
 
@@ -72,10 +72,10 @@ namespace pax
         fprintf(stderr,
             "[MESSAGE] from '%.*s' at {%.*s, %i}:\n"
             "[MESSAGE]     '%.*s'.\n",
-            (int) report.func.cnt, report.func.ptr,
-            (int) report.file.cnt, report.file.ptr,
+            (int) report.func.count, report.func.block,
+            (int) report.file.count, report.file.block,
             (int) report.line,
-            (int) report.text.cnt, report.text.ptr
+            (int) report.text.count, report.text.block
         );
     }
 
@@ -87,10 +87,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[32m[SUCCESS]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[32m[SUCCESS]\x1b[0m     '%.*s'.\n",
-            (int) report.func.cnt, report.func.ptr,
-            (int) report.file.cnt, report.file.ptr,
+            (int) report.func.count, report.func.block,
+            (int) report.file.count, report.file.block,
             (int) report.line,
-            (int) report.text.cnt, report.text.ptr
+            (int) report.text.count, report.text.block
         );
     }
 
@@ -102,10 +102,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[34m[DEBUG]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[34m[DEBUG]\x1b[0m     '%.*s'.\n",
-            (int) report.func.cnt, report.func.ptr,
-            (int) report.file.cnt, report.file.ptr,
+            (int) report.func.count, report.func.block,
+            (int) report.file.count, report.file.block,
             (int) report.line,
-            (int) report.text.cnt, report.text.ptr
+            (int) report.text.count, report.text.block
         );
     }
 
@@ -116,8 +116,8 @@ namespace pax
 
         fprintf(stderr,
             "\x1b[34m[TRACE]\x1b[0m from '%.*s' at {%.*s, %i}\n",
-            (int) report.func.cnt, report.func.ptr,
-            (int) report.file.cnt, report.file.ptr,
+            (int) report.func.count, report.func.block,
+            (int) report.file.count, report.file.block,
             (int) report.line
         );
     }
@@ -130,10 +130,10 @@ namespace pax
         fprintf(stderr,
             "\x1b[35m[PANIC]\x1b[0m from '%.*s' at {%.*s, %i}:\n"
             "\x1b[35m[PANIC]\x1b[0m     '%.*s'.\n",
-            (int) report.func.cnt, report.func.ptr,
-            (int) report.file.cnt, report.file.ptr,
+            (int) report.func.count, report.func.block,
+            (int) report.file.count, report.file.block,
             (int) report.line,
-            (int) report.text.cnt, report.text.ptr
+            (int) report.text.count, report.text.block
         );
 
         raise(SIGABRT);
@@ -149,10 +149,10 @@ namespace pax
             "\x1b[36m[GUARD]\x1b[0m     guard '%.*s' failed.\n"
             "\x1b[36m[GUARD]\x1b[0m\n"
             "\x1b[36m[GUARD]\x1b[0m '%.*s'.\n",
-            (int) report.func.cnt, report.func.ptr,
-            (int) report.file.cnt, report.file.ptr,
-            (int) report.line, (int) expr.cnt, expr.ptr,
-            (int) report.text.cnt, report.text.ptr
+            (int) report.func.count, report.func.block,
+            (int) report.file.count, report.file.block,
+            (int) report.line, (int) expr.count, expr.block,
+            (int) report.text.count, report.text.block
         );
     }
 } // namespace pax

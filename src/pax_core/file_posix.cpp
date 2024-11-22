@@ -42,7 +42,7 @@ namespace pax
 
         pax_guard(handle < 0, "The file is already open");
 
-        handle = open(name.ptr, mode);
+        handle = open(name.block, mode);
 
         if ( handle >= 0 ) {
             file->name   = name;
@@ -65,7 +65,7 @@ namespace pax
 
         pax_guard(handle < 0, "The file is already open");
 
-        handle = open(name.ptr, mode, perm); 
+        handle = open(name.block, mode, perm);
 
         if ( handle >= 0 ) {
             file->name   = name;
@@ -125,23 +125,26 @@ namespace pax
     {
         pax_guard(file != 0, "`file` is null");
 
-        isize avail = value.cnt;
-        isize cnt   = value.cnt;
-        auto* ptr   = value.ptr;
+        isize total = value.count;
+        isize count = 0;
+        isize delta = value.count;
 
-        pax_guard(file->handle >= 0, "The file is closed");
+        pax_guard(file->handle >= 0, "The file is already closed");
 
-        do {
-            auto code = write(file->handle, ptr, cnt);
+        const byte* pntr = value.block;
+
+        while ( count < total ) {
+            auto code = write(file->handle, pntr, delta);
 
             if ( code < 0 )
-                return {avail - cnt, WRITE_ERROR_SYSTEM, errno};
+                return {count, WRITE_ERROR_SYSTEM, errno};
 
-            cnt -= code;
-            ptr += code;
-        } while ( cnt > 0 );
+            count += code;
+            delta -= code;
+            pntr  += code;
+        }
 
-        return {avail, WRITE_ERROR_NONE};
+        return {count, WRITE_ERROR_NONE};
     }
 
     Write_Value
@@ -150,26 +153,32 @@ namespace pax
         pax_guard(file  != 0, "`file` is null");
         pax_guard(value != 0, "`value` is null");
 
-        isize avail = buff_avail(value);
-        isize cnt   = avail;
-        byte* ptr   = value->head;
+        isize total = buff_avail(value);
+        isize count = 0;
+        isize delta = total;
 
-        pax_guard(file->handle >= 0, "The file is closed");
+        pax_guard(file->handle >= 0, "The file is already closed");
 
-        do {
-            auto code = write(file->handle, ptr, cnt);
+        byte* pntr = value->head;
 
-            if ( code < 0 )
-                return {avail - cnt, WRITE_ERROR_SYSTEM, errno};
+        while ( count < total ) {
+            auto code = write(file->handle, pntr, delta);
 
-            cnt -= code;
-            ptr += code;
-        } while ( cnt > 0 );
+            if ( code < 0 ) {
+                value->head += count;
 
-        value->head = value->ptr;
-        value->tail = value->ptr;
+                return {count, WRITE_ERROR_SYSTEM, errno};
+            }
 
-        return {avail, WRITE_ERROR_NONE};
+            count += code;
+            delta -= code;
+            pntr  += code;
+        }
+
+        value->head = value->block;
+        value->tail = value->block;
+
+        return {count, WRITE_ERROR_NONE};
     }
 
     Read_Value
@@ -178,27 +187,30 @@ namespace pax
         pax_guard(file  != 0, "`file` is null");
         pax_guard(value != 0, "`value` is null");
 
-        isize avail = buff_avail(value);
-        isize cnt   = avail;
-        byte* ptr   = value->tail;
+        isize total = buff_avail(value);
+        isize count = 0;
+        isize delta = total;
 
-        pax_guard(file->handle >= 0, "The file is closed");
+        pax_guard(file->handle >= 0, "The file is already closed");
 
-        do {
-            auto code = read(file->handle, ptr, cnt);
+        byte* pntr = value->tail;
 
-            if ( code < 0 )
-                return {avail - cnt, READ_ERROR_SYSTEM, errno};
+        while ( count < total ) {
+            auto code = read(file->handle, pntr, delta);
 
             if ( code == 0 ) break;
 
-            cnt -= code;
-            ptr += code;
-        } while ( cnt > 0 );
+            if ( code < 0 )
+                return {0, READ_ERROR_SYSTEM, errno};
 
-        value->tail += avail - cnt;
+            count += code;
+            delta -= code;
+            pntr  += code;
+        }
 
-        return {avail - cnt, READ_ERROR_NONE};
+        value->tail += count;
+
+        return {count, READ_ERROR_NONE};
     }
 
     //

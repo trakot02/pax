@@ -89,31 +89,37 @@ namespace pax
     struct Buff;
 
     struct Str8 {
-        Str8(const byte* str);
+        Str8(const byte* string);
 
-        Str8(const byte* str, isize cnt);
+        Str8(const byte* string, isize count);
 
-        template <isize CNT>
-        constexpr Str8(const byte (&str)[CNT]);
+        template <isize COUNT>
+        constexpr Str8(const byte (&string)[COUNT]);
 
         const byte&
-        operator[](isize idx) const;
+        operator[](isize index) const;
 
-        const byte* ptr = 0;
-        isize       cnt = 0;
+        //
+        //
+        // Variables.
+        //
+        //
+
+        const byte* block = 0;
+        isize       count = 0;
     };
 
     Str8
-    str8_from(const Buff* buf);
+    str8_from(const Buff* buffer);
 
     Str8
-    str8_trim(Str8 str);
+    str8_trim(Str8 string);
 
     Str8
-    str8_trim_head(Str8 str);
+    str8_trim_head(Str8 string);
 
     Str8
-    str8_trim_tail(Str8 str);
+    str8_trim_tail(Str8 string);
 
     static const isize WIDTH_STR8 = pax_type_width(Str8);
     static const isize ALIGN_STR8 = pax_type_align(Str8);
@@ -124,9 +130,9 @@ namespace pax
     //
     //
 
-    template <isize CNT>
-    constexpr Str8::Str8(const byte (&str)[CNT])
-        : ptr {str}, cnt {CNT - 1}
+    template <isize COUNT>
+    constexpr Str8::Str8(const byte (&string)[COUNT])
+        : block {string}, count {COUNT - 1}
     {}
 } // namespace pax
 

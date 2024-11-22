@@ -1,4 +1,5 @@
 #include <pax_core/base_alloc.hpp>
+#include <pax_core/report.hpp>
 
 #include <stdlib.h>
 
@@ -41,22 +42,22 @@ namespace pax
 
         isize width = value->width;
         isize align = value->align;
-        isize cnt   = value->cnt;
-        usize ptr   = 0;
+        isize count = value->count;
+        usize block = 0;
 
-        pax_guard(width > 0, "`width` isn't positive");
+        pax_guard(width > 0, "`value.width` isn't positive");
 
         pax_guard(align > 0 && (align & (align - 1)) == 0,
-            "`align` is not a power of two");
+            "`value.align` is not a power of two");
 
-        if ( cnt <= 0 ) return;
+        if ( count <= 0 ) return;
 
-        ptr = (usize) calloc(cnt, width);
+        block = (usize) calloc(count, width);
 
-        pax_guard((ptr & (align - 1)) == 0,
+        pax_guard((block & (align - 1)) == 0,
             "The result is not aligned properly");
 
-        value->ptr = (byte*) ptr;
+        value->block = (byte*) block;
     }
 
     void
@@ -66,21 +67,21 @@ namespace pax
 
         isize width = value.width;
         isize align = value.align;
-        isize cnt   = value.cnt;
-        usize ptr   = (usize) value.ptr;
+        isize count = value.count;
+        usize block = (usize) value.block;
 
-        pax_guard(width > 0, "`width` isn't positive");
+        pax_guard(width > 0, "`value.width` isn't positive");
 
         pax_guard(align > 0 && (align & (align - 1)) == 0,
-            "`align` is not a power of two");
+            "`value.align` is not a power of two");
 
-        pax_guard((ptr & (align - 1)) == 0,
+        pax_guard((block & (align - 1)) == 0,
             "The result is not aligned properly");
 
-        pax_guard((cnt <= 0 && ptr == 0) ||
-                  (cnt  > 0 && ptr != 0),
-            "`ptr` isn't null");
+        pax_guard((count <= 0 && block == 0) ||
+                  (count  > 0 && block != 0),
+            "`value.block` isn't null");
 
-        free((byte*) ptr);
+        free((byte*) block);
     }
 } // namespace pax

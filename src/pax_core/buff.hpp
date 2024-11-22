@@ -9,63 +9,63 @@
 namespace pax
 {
     struct Buff {
-        byte* ptr  = 0;
-        isize cnt  = 0;
-        byte* head = 0;
-        byte* tail = 0;
+        byte* block = 0;
+        isize count = 0;
+        byte* head  = 0;
+        byte* tail  = 0;
     };
 
     Buff
-    buff_from(byte* ptr, isize cnt);
+    buff_from(byte* block, isize count);
 
     Arena_Error
-    buff_init(Buff* buf, Arena* arena, isize cnt);
+    buff_init(Buff* buffer, Arena* arena, isize count);
 
     isize
-    buff_size(const Buff* buf);
+    buff_size(const Buff* buffer);
 
     isize
-    buff_avail(const Buff* buf);
+    buff_avail(const Buff* buffer);
 
     void
-    buff_shift(Buff* buf);
+    buff_shift(Buff* buffer);
 
     void
-    buff_clear(Buff* buf);
+    buff_clear(Buff* buffer);
 
     void
-    buff_fill(Buff* buf, byte value = 0);
+    buff_fill(Buff* buffer, byte value = 0);
 
     void
-    buff_fill_ptr(Buff* buf, byte* value);
+    buff_fill_ptr(Buff* buffer, byte* value);
 
     void
-    buff_trim(Buff* buf);
+    buff_trim(Buff* buffer);
 
     /*
     ???
-    buff_split(Buff* buf, ???, byte delim);
+    buff_split(Buff* buffer, ???, byte delim);
     */
     void
-    buff_trim_head(Buff* buf);
+    buff_trim_head(Buff* buffer);
 
     void
-    buff_trim_tail(Buff* buf);
+    buff_trim_tail(Buff* buffer);
 
     Write
-    buff_write(Buff* buf);
+    buff_write(Buff* buffer);
 
     Read
-    buff_read(Buff* buf);
+    buff_read(Buff* buffer);
 
     Write_Value
-    buff_write_str8(Buff* buf, Str8 value);
+    buff_write_str8(Buff* buffer, Str8 value);
 
     Write_Value
-    buff_write_buff(Buff* buf, Buff* value);
+    buff_write_buff(Buff* buffer, Buff* value);
 
     Read_Value
-    buff_read_buff(Buff* buf, Buff* value);
+    buff_read_buff(Buff* buffer, Buff* value);
 } // namespace pax
 
 #endif // PAX_CORE_BUFF_HPP

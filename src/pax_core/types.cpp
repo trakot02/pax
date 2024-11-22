@@ -10,110 +10,102 @@ namespace pax
     //
     //
 
-    Str8::Str8(const byte* str)
-        : ptr {0}, cnt {0}
+    Str8::Str8(const byte* string)
+        : block {0}, count {0}
     {
-        isize idx = 0;
+       const byte* copy = string; 
 
-        if ( str == 0 ) return;
+        if ( string == 0 ) return;
 
-        while ( str[idx] != 0 )
-            idx += 1;
+        while ( *copy != 0 )
+            copy += 1;
 
-        ptr = str;
-        cnt = idx;
+        block = string;
+        count = copy - string;
     }
 
-    Str8::Str8(const byte* str, isize cnt)
-        : ptr {0}, cnt {0}
+    Str8::Str8(const byte* string, isize count)
+        : block {0}, count {0}
     {
-        isize idx = 0;
+        const byte* copy = string; 
 
-        if ( str == 0 ) return;
+        if ( string == 0 ) return;
 
-        while ( str[idx] != 0 && idx < cnt )
-            idx += 1;
+        while ( *copy != 0 && copy - string <= count )
+            copy += 1;
 
-        ptr = str;
-        cnt = idx;
+        block = string;
+        count = copy - string;
     }
 
     const byte&
-    Str8::operator[](isize idx) const
+    Str8::operator[](isize index) const
     {
-        pax_guard(0 <= idx && idx < cnt,
-            "`idx` is out of bounds");
+        pax_guard(0 <= index && index < count,
+            "`index` is out of bounds");
 
-        return ptr[idx];
+        return block[index];
     }
 
     Str8
-    str8_from(const Buff* buf)
+    str8_from(const Buff* buffer)
     {
-        Str8 str = "";
+        Str8 string = "";
 
-        if ( buf == 0 ) return str;
+        if ( buffer == 0 ) return string;
 
-        str.ptr = buf->head;
-        str.cnt = buff_size(buf);
+        string.block = buffer->head;
+        string.count = buff_size(buffer);
 
-        return str;
+        return string;
     }
 
     Str8
-    str8_trim(Str8 str)
+    str8_trim(Str8 string)
     {
-        str = str8_trim_head(str);
-        str = str8_trim_tail(str);
+        string = str8_trim_head(string);
+        string = str8_trim_tail(string);
 
-        return str;
+        return string;
     }
 
     Str8
-    str8_trim_head(Str8 str)
+    str8_trim_head(Str8 string)
     {
-        auto* head = str.ptr;
-        auto* tail = str.ptr + str.cnt;
-        auto* ptr  = head;
+        const byte* head = string.block;
+        const byte* tail = string.block + string.count;
+        const byte* pntr = head;
 
-        while ( ptr < tail ) {
-            byte val = ptr[0];
-
-            if ( val != '\t' && val != '\n' &&
-                 val != '\v' && val != '\f' &&
-                 val != '\r' && val != ' ' )
+        while ( pntr < tail ) {
+            if ( (*pntr < 0x09 || *pntr > 0x0d) && *pntr != 0x20 )
                 break;
 
-            ptr += 1;
+            pntr += 1;
         }
 
-        str.ptr = ptr;
-        str.cnt = tail - ptr;
+        string.block = pntr;
+        string.count = tail - pntr;
 
-        return str;
+        return string;
     }
 
     Str8
-    str8_trim_tail(Str8 str)
+    str8_trim_tail(Str8 string)
     {
-        auto* head = str.ptr;
-        auto* tail = str.ptr + str.cnt;
-        auto* ptr  = tail - 1;
+        const byte* head = string.block;
+        const byte* tail = string.block + string.count;
+        const byte* pntr = tail;
 
-        while ( ptr >= head ) {
-            byte val = ptr[0];
+        do {
+            pntr -= 1;
 
-            if ( val != '\t' && val != '\n' &&
-                 val != '\v' && val != '\f' &&
-                 val != '\r' && val != ' ' )
+            if ( (*pntr < 0x09 || *pntr > 0x0d) && *pntr != 0x20 )
                 break;
+        } while ( pntr >= head );
 
-            ptr -= 1;
-        }
+        string.block = head;
+        string.count = pntr - head + 1;
 
-        str.ptr = head;
-        str.cnt = ptr - head + 1;
-
-        return str;
+        return string;
     }
 } // namespace pax

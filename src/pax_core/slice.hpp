@@ -8,36 +8,30 @@ namespace pax
 {
     template <class Type>
     struct Slice {
+        const Type&
+        operator[](isize index) const;
+
+        Type&
+        operator[](isize index);
+
         //
         //
         // Variables.
         //
         //
 
-        Type* ptr = 0;
-        isize cnt = 0;
-        isize cap = 0;
-
-        //
-        //
-        // Operations.
-        //
-        //
-
-        const Type&
-        operator[](isize idx) const;
-
-        Type&
-        operator[](isize idx);
+        Type* block = 0;
+        isize count = 0;
+        isize total = 0;
     };
 
-    template <class Type, isize CNT>
+    template <class Type, isize COUNT>
     Slice<Type>
-    slice_from_mut(Array<Type, CNT>&& array);
+    slice_from_mut(Array<Type, COUNT>&& array);
 
-    template <class Type, isize CNT>
+    template <class Type, isize COUNT>
     Slice<const Type>
-    slice_from(const Array<Type, CNT>& array);
+    slice_from(const Array<Type, COUNT>& array);
 
 /*
     template <class Type>
@@ -93,46 +87,46 @@ namespace pax
 
     template <class Type>
     const Type&
-    Slice<Type>::operator[](isize idx) const
+    Slice<Type>::operator[](isize index) const
     {
-        pax_guard(0 <= idx && idx < cnt,
-            "`idx` is out of bounds");
+        pax_guard(0 <= index && index < count,
+            "`index` is out of bounds");
 
-        return ptr[idx];
+        return block[index];
     }
 
     template <class Type>
     Type&
-    Slice<Type>::operator[](isize idx)
+    Slice<Type>::operator[](isize index)
     {
-        pax_guard(0 <= idx && idx < cnt,
-            "`idx` is out of bounds");
+        pax_guard(0 <= index && index < count,
+            "`index` is out of bounds");
 
-        return ptr[idx];
+        return block[index];
     }
 
-    template <class Type, isize CNT>
+    template <class Type, isize COUNT>
     Slice<Type>
-    slice_from_mut(Array<Type, CNT>&& array)
+    slice_from_mut(Array<Type, COUNT>&& array)
     {
         Slice<Type> slice;
 
-        slice.ptr = array.ptr;
-        slice.cnt = array.cnt;
-        slice.cap = array.cnt;
+        slice.block = array.block;
+        slice.count = array.count;
+        slice.total = array.count;
 
         return slice;
     }
 
-    template <class Type, isize CNT>
+    template <class Type, isize COUNT>
     Slice<const Type>
-    slice_from(const Array<Type, CNT>& array)
+    slice_from(const Array<Type, COUNT>& array)
     {
         Slice<const Type> slice;
 
-        slice.ptr = array.ptr;
-        slice.cnt = array.cnt;
-        slice.cap = array.cnt;
+        slice.block = array.block;
+        slice.count = array.count;
+        slice.total = array.count;
 
         return slice;
     }

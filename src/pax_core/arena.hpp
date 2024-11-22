@@ -20,14 +20,14 @@ namespace pax
 
     struct Arena {
         Alloc       alloc;
-        isize       size = 0;
-        Arena_Node* list = 0;
+        isize       count = 0;
+        Arena_Node* list  = 0;
     };
 
     extern const Array<Str8, ARENA_ERROR_COUNT> ARENA_ERROR_TITLE;
 
     Arena
-    arena_init(isize size, Alloc alloc = base_alloc());
+    arena_init(isize count, Alloc alloc = base_alloc());
 
     void
     arena_drop(Arena* arena);

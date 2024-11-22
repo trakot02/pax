@@ -8,8 +8,8 @@ namespace pax
     struct Alloc_Value {
         isize width;
         isize align;
-        isize cnt;
-        byte* ptr;
+        isize count;
+        byte* block;
     };
 
     struct Alloc {

@@ -13,11 +13,8 @@
 #include <pax_core/write.hpp>
 #include <pax_core/read.hpp>
 #include <pax_core/buff.hpp>
-// #include <pax_core/file.hpp>
+#include <pax_core/file.hpp>
 
 #include <pax_core/report.hpp>
-
-// #include <pax_core/format.hpp>
-// #include <pax_core/match.hpp>
 
 #endif // PAX_CORE_EXPORT_HPP
