@@ -48,7 +48,7 @@ namespace pax
     }
 
     Str8
-    str8_from(const Buff* buffer)
+    str8_init(const Buff* buffer)
     {
         Str8 string = "";
 

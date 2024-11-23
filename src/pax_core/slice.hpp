@@ -27,11 +27,11 @@ namespace pax
 
     template <class Type, isize COUNT>
     Slice<Type>
-    slice_from_mut(Array<Type, COUNT>&& array);
+    slice_init_arr(Array<Type, COUNT>&& array);
 
     template <class Type, isize COUNT>
     Slice<const Type>
-    slice_from(const Array<Type, COUNT>& array);
+    slice_init_arr(const Array<Type, COUNT>& array);
 
 /*
     template <class Type>
@@ -107,7 +107,7 @@ namespace pax
 
     template <class Type, isize COUNT>
     Slice<Type>
-    slice_from_mut(Array<Type, COUNT>&& array)
+    slice_init_arr(Array<Type, COUNT>&& array)
     {
         Slice<Type> slice;
 
@@ -120,7 +120,7 @@ namespace pax
 
     template <class Type, isize COUNT>
     Slice<const Type>
-    slice_from(const Array<Type, COUNT>& array)
+    slice_init_arr(const Array<Type, COUNT>& array)
     {
         Slice<const Type> slice;
 
@@ -192,7 +192,7 @@ namespace pax
             if ( value.addr == 0 ) return self;
 
             isize size = count * WIDTH_TYPE;
-            auto  buff = buff_from(value.addr, size);
+            auto  buff = buff_init(value.addr, size);
 
             buff_fill_addr(&buff, addr);
 

@@ -16,7 +16,7 @@ namespace pax
     };
 
     Buff
-    buff_from(byte* block, isize count);
+    buff_init_ptr(byte* block = 0, isize count = 0);
 
     Arena_Error
     buff_init(Buff* buffer, Arena* arena, isize count);

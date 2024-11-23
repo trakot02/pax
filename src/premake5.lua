@@ -30,6 +30,9 @@ project "pax_core"
         "pax_core/buff.cpp",
         "pax_core/file.hpp",
         "pax_core/file.cpp",
+        "pax_core/match.hpp",
+        "pax_core/csv_match.hpp",
+        "pax_core/csv_match.cpp",
         "pax_core/report.hpp",
         "pax_core/report.cpp",
     }

@@ -28,17 +28,9 @@ namespace pax
     //
     //
 
-    File STDOUT = {
-        "stdout", GetStdHandle(STD_OUTPUT_HANDLE),
-    };
-
-    File STDERR = {
-        "stderr", GetStdHandle(STD_ERROR_HANDLE),
-    };
-
-    File STDIN = {
-        "stdin", GetStdHandle(STD_INPUT_HANDLE),
-    };
+    File STDOUT = {GetStdHandle(STD_OUTPUT_HANDLE)};
+    File STDERR = {GetStdHandle(STD_ERROR_HANDLE)};
+    File STDIN  = {GetStdHandle(STD_INPUT_HANDLE)};
 
     File_Error
     file_open(File* file, Str8 name)
@@ -51,14 +43,12 @@ namespace pax
             GENERIC_READ, 0, 0, OPEN_EXISTING,
             FILE_ATTRIBUTE_NORMAL, 0);
 
-        if ( handle != INVALID_HANDLE_VALUE ) {
-            file->name   = name;
-            file->handle = handle;
+        if ( handle == INVALID_HANDLE_VALUE )
+            return (File_Error) GetLastError();
 
-            return FILE_ERROR_NONE;
-        }
+        file->handle = handle;
 
-        return (File_Error) GetLastError();
+        return FILE_ERROR_NONE;
     }
 
     File_Error
@@ -72,14 +62,12 @@ namespace pax
             GENERIC_WRITE, 0, 0, CREATE_ALWAYS,
             FILE_ATTRIBUTE_NORMAL, 0);
 
-        if ( handle != INVALID_HANDLE_VALUE ) {
-            file->name   = name;
-            file->handle = handle;
+        if ( handle == INVALID_HANDLE_VALUE )
+            return (File_Error) GetLastError();
 
-            return FILE_ERROR_NONE;
-        }
+        file->handle = handle;
 
-        return (File_Error) GetLastError();
+        return FILE_ERROR_NONE;
     }
 
     void
@@ -93,7 +81,6 @@ namespace pax
 
         pax_guard(code != 0, "The operation failed");
 
-        file->name   = "";
         file->handle = 0;
     }
 

@@ -15,6 +15,9 @@
 #include <pax_core/buff.hpp>
 #include <pax_core/file.hpp>
 
+#include <pax_core/match.hpp>
+#include <pax_core/csv_match.hpp>
+
 #include <pax_core/report.hpp>
 
 #endif // PAX_CORE_EXPORT_HPP

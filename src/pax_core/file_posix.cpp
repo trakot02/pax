@@ -28,9 +28,9 @@ namespace pax
     //
     //
 
-    File STDOUT = {"stdout", STDOUT_FILENO};
-    File STDERR = {"stderr", STDERR_FILENO};
-    File STDIN  = {"stdin", STDIN_FILENO};
+    File STDOUT = {STDOUT_FILENO};
+    File STDERR = {STDERR_FILENO};
+    File STDIN  = {STDIN_FILENO};
 
     File_Error
     file_open(File* file, Str8 name)
@@ -44,14 +44,12 @@ namespace pax
 
         handle = open(name.block, mode);
 
-        if ( handle >= 0 ) {
-            file->name   = name;
-            file->handle = handle;
+        if ( handle < 0 )
+            return (File_Error) errno;
 
-            return FILE_ERROR_NONE;
-        }
+        file->handle = handle;
 
-        return (File_Error) errno;
+        return FILE_ERROR_NONE;
     }
 
     File_Error
@@ -67,14 +65,12 @@ namespace pax
 
         handle = open(name.block, mode, perm);
 
-        if ( handle >= 0 ) {
-            file->name   = name;
-            file->handle = handle;
+        if ( handle < 0 )
+            return (File_Error) errno;
 
-            return FILE_ERROR_NONE;
-        }
+        file->handle = handle;
 
-        return (File_Error) errno;
+        return FILE_ERROR_NONE;
     }
 
     void
@@ -88,7 +84,6 @@ namespace pax
 
         pax_guard(code >= 0, "The operation failed");
 
-        file->name   = "";
         file->handle = -1;
     }
 

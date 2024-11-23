@@ -27,7 +27,7 @@ namespace pax
     //
 
     Buff
-    buff_from(byte* block, isize count)
+    buff_init_ptr(byte* block, isize count)
     {
         pax_guard(count >= 0, "`count` is negative");
 

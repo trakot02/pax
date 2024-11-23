@@ -17,7 +17,6 @@ namespace pax
     };
 
     struct File {
-        Str8  name   = "";
         void* handle = 0;
     };
 
