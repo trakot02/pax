@@ -13,29 +13,29 @@ namespace pax
     Str8::Str8(const byte* string)
         : block {0}, count {0}
     {
-       const byte* copy = string; 
+       const byte* pntr = string;
 
         if ( string == 0 ) return;
 
-        while ( *copy != 0 )
-            copy += 1;
+        while ( *pntr != 0 )
+            pntr += 1;
 
         block = string;
-        count = copy - string;
+        count = pntr - string;
     }
 
     Str8::Str8(const byte* string, isize count)
         : block {0}, count {0}
     {
-        const byte* copy = string; 
+        const byte* pntr = string;
 
         if ( string == 0 ) return;
 
-        while ( *copy != 0 && copy - string <= count )
-            copy += 1;
+        while ( *pntr != 0 && pntr - string <= count )
+            pntr += 1;
 
         block = string;
-        count = copy - string;
+        count = pntr - string;
     }
 
     const byte&
@@ -48,14 +48,22 @@ namespace pax
     }
 
     Str8
-    str8_init(const Buff* buffer)
+    str8_empty()
+    {
+        Str8 string = "";
+
+        return string;
+    }
+
+    Str8
+    str8_from(const Buff* buffer)
     {
         Str8 string = "";
 
         if ( buffer == 0 ) return string;
 
         string.block = buffer->head;
-        string.count = buff_size(buffer);
+        string.count = buff_count(buffer);
 
         return string;
     }

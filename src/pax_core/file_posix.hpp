@@ -2,6 +2,7 @@
 #define PAX_CORE_FILE_POSIX_HPP
 
 #include <pax_core/types.hpp>
+#include <pax_core/array.hpp>
 #include <pax_core/write.hpp>
 #include <pax_core/read.hpp>
 
@@ -17,12 +18,15 @@ namespace pax
     };
 
     struct File {
-        isize handle = -1;
+        isize handle;
     };
 
     extern File STDOUT;
     extern File STDERR;
     extern File STDIN;
+
+    File
+    file_empty();
 
     //
     // Opens a file in read mode. If the file does not exist
@@ -42,20 +46,20 @@ namespace pax
     void
     file_close(File* file);
 
-    Write
-    file_write(File* file);
-
-    Read
-    file_read(File* file);
-
     Write_Value
     file_write_str8(File* file, Str8 value);
 
     Write_Value
     file_write_buff(File* file, Buff* value);
 
+    Write
+    file_write(File* file);
+
     Read_Value
     file_read_buff(File* file, Buff* value);
+
+    Read
+    file_read(File* file);
 } // namespace pax
 
 #endif // PAX_CORE_FILE_POSIX_HPP

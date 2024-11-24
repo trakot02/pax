@@ -4,79 +4,91 @@
 
 using namespace pax;
 
-static Arena arena = arena_init();
+static Arena arena = arena_from(base_alloc());
+
+void
+csv_read_header(void* self, Str8 token, isize col)
+{
+    printf("{%3i} => %.*s\n", (int) col,
+        (int) token.count, token.block);
+}
+
+void
+csv_read_column(void* self, Str8 token, isize col, isize row)
+{
+    switch ( col ) {
+        case 0:
+        case 1: {
+            i64  value = 0;
+            auto error = parse_i64(token, &value);
+
+            if ( error != PARSE_ERROR_NONE )
+                pax_warning(PARSE_ERROR_TITLE[error]);
+
+            break;
+        }
+
+        case 2:
+        case 3: break;
+
+        default: {
+            pax_error("Too many columns");
+            break;
+        }
+    }
+
+    printf("{%3i, %3i} => '%.*s'\n", (int) col, (int) row,
+        (int) token.count, token.block);
+}
 
 int
 main(int argc, char* argv[])
 {
-    Buff  buff;
-    File  file;
-    isize error = 0;
-
-    auto alloc = buff_init(&buff, &arena, 8192);
-
-    if ( alloc != ARENA_ERROR_NONE ) {
-        pax_fatal("Unable to allocate memory");
-        pax_fatal(ARENA_ERROR_TITLE[alloc]);
-
-        return 1;
-    }
+    Buff buff = buff_empty();
+    File file = file_empty();
 
     if ( argc < 2 ) {
-        pax_fatal("Unable to read file name");
+        pax_error("Unable to read file name");
 
         return 1;
     }
+
+    auto alloc = buff_init(&buff, arena_alloc(&arena), 8192);
+
+    if ( alloc != ALLOC_ERROR_NONE ) {
+        pax_error(ALLOC_ERROR_TITLE[alloc]);
+
+        return 1;
+    }
+
+    printf("buffer size = %li\n", buff.count);
 
     auto open = file_open(&file, argv[1]);
 
     if ( open != FILE_ERROR_NONE ) {
-        pax_fatal("Unable to open file for reading");
-        pax_fatal(argv[1]);
+        pax_error("Unable to open file");
+
+        stderr_write_str8(argv[1]);
+        stderr_write_str8("\n");
 
         return 1;
     }
 
-    isize col   = 0;
-    isize row   = 0;
-    Str8  token = "";
+    CSV_Parse parse;
 
-    while ( true ) {
-        auto read = file_read_buff(&file, &buff);
-        
-        error = read.error;
+    parse.func_header = &csv_read_header;
+    parse.func_column = &csv_read_column;
 
-        if ( read.count == 0 ) break;
-
-        while ( true ) {
-            auto match = csv_match_column(&buff, &token);
-
-            isize c = col;
-            isize r = row;
-
-            if ( match.error != MATCH_ERROR_NONE ) break;
-
-            col += 1;
-
-            if ( match.line != 0 ) col = 0, row += 1;
-
-            token = str8_trim(token);
-
-            printf("(%4i, %4i) [%3i] => '%.*s'\n", (int) c, (int) r,
-                (int) match.count, (int) token.count, token.block);
-        }
-
-        buff_shift(&buff);
-    }
+    auto error = csv_parse(parse, &buff, &file, CSV_HEADER_TRUE);
 
     if ( error != READ_ERROR_NONE ) {
-        pax_fatal("Unable to read from file");
+        pax_error("Unable to read from file");
 
         return 1;
     }
 
-    if ( buff_size(&buff) != 0 ) {
-        pax_fatal("Malformed file");
+    if ( buff_count(&buff) != 0 ) {
+        pax_error("Malformed file");
 
         return 1;
     }

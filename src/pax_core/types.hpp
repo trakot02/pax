@@ -105,12 +105,15 @@ namespace pax
         //
         //
 
-        const byte* block = 0;
-        isize       count = 0;
+        const byte* block;
+        isize       count;
     };
 
     Str8
-    str8_init(const Buff* buffer);
+    str8_empty();
+
+    Str8
+    str8_from(const Buff* buffer);
 
     Str8
     str8_trim(Str8 string);

@@ -1,15 +1,18 @@
-#include <pax_core/base_alloc.hpp>
+#include <pax_core/mem/base.hpp>
 #include <pax_core/report.hpp>
 
 #include <stdlib.h>
 
 namespace pax
 {
-    void
-    _base_request(void* alloc, Alloc_Value* value);
+    Alloc_Error
+    _base_request(void* self, Alloc_Value* value);
 
     void
-    _base_release(void* alloc, Alloc_Value value);
+    _base_release(void* self, Alloc_Value value);
+
+    void
+    _base_clear(void* self);
 
     //
     //
@@ -20,24 +23,25 @@ namespace pax
     Alloc
     base_alloc()
     {
-        Alloc alloc;
+        auto alloc = alloc_empty();
 
         alloc.func_request = &_base_request;
         alloc.func_release = &_base_release;
+        alloc.func_clear   = &_base_clear;
 
         return alloc;
     }
 
     //
     //
-    // Hidden.
+    // Not exposed.
     //
     //
 
-    void
-    _base_request(void* alloc, Alloc_Value* value)
+    Alloc_Error
+    _base_request(void* self, Alloc_Value* value)
     {
-        pax_guard(alloc == 0, "`alloc` isn't null");
+        pax_guard(self  == 0, "`self` isn't null");
         pax_guard(value != 0, "`value` is null");
 
         isize width = value->width;
@@ -50,7 +54,7 @@ namespace pax
         pax_guard(align > 0 && (align & (align - 1)) == 0,
             "`value.align` is not a power of two");
 
-        if ( count <= 0 ) return;
+        if ( count <= 0 ) return ALLOC_ERROR_NONE;
 
         block = (usize) calloc(count, width);
 
@@ -58,12 +62,14 @@ namespace pax
             "The result is not aligned properly");
 
         value->block = (byte*) block;
+
+        return ALLOC_ERROR_NONE;
     }
 
     void
-    _base_release(void* alloc, Alloc_Value value)
+    _base_release(void* self, Alloc_Value value)
     {
-        pax_guard(alloc == 0, "`alloc` isn't null");
+        pax_guard(self == 0, "`self` isn't null");
 
         isize width = value.width;
         isize align = value.align;
@@ -83,5 +89,11 @@ namespace pax
             "`value.block` isn't null");
 
         free((byte*) block);
+    }
+
+    void
+    _base_clear(void* self)
+    {
+        pax_guard(self == 0, "`self` isn't null");
     }
 } // namespace pax

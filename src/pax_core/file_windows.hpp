@@ -2,6 +2,7 @@
 #define PAX_CORE_FILE_WINDOWS_HPP
 
 #include <pax_core/types.hpp>
+#include <pax_core/array.hpp>
 #include <pax_core/write.hpp>
 #include <pax_core/read.hpp>
 
@@ -17,19 +18,22 @@ namespace pax
     };
 
     struct File {
-        void* handle = 0;
+        void* handle;
     };
 
     extern File STDOUT;
     extern File STDERR;
     extern File STDIN;
 
+    File
+    file_empty();
+
     //
     // Opens a file in read mode. If the file does not exist
     // it returns an error.
     //
     File_Error
-    file_open(File* file, Str8 name);
+    file_open(File* self, Str8 name);
 
     //
     // Opens a file in write mode. If the file does not exist
@@ -37,25 +41,25 @@ namespace pax
     // truncated.
     //
     File_Error
-    file_create(File* file, Str8 name);
+    file_create(File* self, Str8 name);
 
     void
-    file_close(File* file);
+    file_close(File* self);
+
+    Write_Value
+    file_write_str8(File* self, Str8 value);
+
+    Write_Value
+    file_write_buff(File* self, Buff* value);
 
     Write
-    file_write(File* file);
-
-    Read
-    file_read(File* file);
-
-    Write_Value
-    file_write_str8(File* file, Str8 value);
-
-    Write_Value
-    file_write_buff(File* file, Buff* value);
+    file_write(File* self);
 
     Read_Value
-    file_read_buff(File* file, Buff* value);
+    file_read_buff(File* self, Buff* value);
+
+    Read
+    file_read(File* self);
 } // namespace pax
 
 #endif // PAX_CORE_FILE_WINDOWS_HPP

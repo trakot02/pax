@@ -20,18 +20,22 @@ namespace pax
         //
         //
 
-        Type* block = 0;
-        isize count = 0;
-        isize total = 0;
+        Type* block;
+        isize count;
+        isize total;
     };
+
+    template <class Type>
+    Slice<Type>
+    slice_empty();
 
     template <class Type, isize COUNT>
     Slice<Type>
-    slice_init_arr(Array<Type, COUNT>&& array);
+    slice_from_arr(Array<Type, COUNT>&& array);
 
     template <class Type, isize COUNT>
     Slice<const Type>
-    slice_init_arr(const Array<Type, COUNT>& array);
+    slice_from_arr(const Array<Type, COUNT>& array);
 
 /*
     template <class Type>
@@ -105,11 +109,24 @@ namespace pax
         return block[index];
     }
 
-    template <class Type, isize COUNT>
+    template <class Type>
     Slice<Type>
-    slice_init_arr(Array<Type, COUNT>&& array)
+    slice_empty()
     {
         Slice<Type> slice;
+
+        slice.block = 0;
+        slice.count = 0;
+        slice.total = 0;
+
+        return slice;
+    }
+
+    template <class Type, isize COUNT>
+    Slice<Type>
+    slice_from_arr(Array<Type, COUNT>&& array)
+    {
+        auto slice = slice_empty<Type>();
 
         slice.block = array.block;
         slice.count = array.count;
@@ -120,9 +137,9 @@ namespace pax
 
     template <class Type, isize COUNT>
     Slice<const Type>
-    slice_init_arr(const Array<Type, COUNT>& array)
+    slice_from_arr(const Array<Type, COUNT>& array)
     {
-        Slice<const Type> slice;
+        auto slice = slice_empty<const Type>();
 
         slice.block = array.block;
         slice.count = array.count;

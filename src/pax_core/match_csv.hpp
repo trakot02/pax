@@ -15,6 +15,9 @@ namespace pax
     };
 
     CSV_Match
+    csv_match_empty();
+
+    CSV_Match
     csv_match_column(Buff* buffer, Str8* token, byte delim = ',');
 } // namespace pax
 

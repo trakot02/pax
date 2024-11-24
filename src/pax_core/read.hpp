@@ -14,6 +14,12 @@ namespace pax
         READ_ERROR_COUNT = 3,
     };
 
+    static const Array<Str8, READ_ERROR_COUNT> READ_ERROR_TITLE = {
+        "READ_ERROR_NONE",
+        "READ_ERROR_OVERFLOW",
+        "READ_ERROR_SYSTEM",
+    };
+
     struct Read_Value {
         isize      count;
         Read_Error error;
@@ -21,25 +27,26 @@ namespace pax
     };
 
     struct Read {
-        void* self = 0;
+        void* context;
 
         Read_Value (*func_buff) (
-            void* self, Buff* value
-        ) = 0;
+            void* ctxt, Buff* value
+        );
 
-        void (*func_close) (
-            void* self
-        ) = 0;
-
+        void (*func_close) (void* ctxt);
     };
 
-    extern const Array<Str8, READ_ERROR_COUNT> READ_ERROR_TITLE;
+    Read
+    read_empty();
 
     Read_Value
-    read_buff(Read read, Buff* value);
+    read_value_empty();
+
+    Read_Value
+    read_buff(Read self, Buff* value);
 
     void
-    read_close(Read read);
+    read_close(Read self);
 } // namespace pax
 
 #endif // PAX_CORE_READ_HPP

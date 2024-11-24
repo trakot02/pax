@@ -1,4 +1,4 @@
-#include <pax_core/csv_match.hpp>
+#include <pax_core/match_csv.hpp>
 #include <pax_core/buff.hpp>
 
 namespace pax
@@ -11,12 +11,23 @@ namespace pax
     };
 
     CSV_Match
+    csv_match_empty()
+    {
+        CSV_Match match;
+
+        match.line  = 0;
+        match.count = 0;
+        match.error = MATCH_ERROR_NONE;
+
+        return match;
+    }
+
+    CSV_Match
     csv_match_column(Buff* buffer, Str8* token, byte delim)
     {
         pax_guard(buffer != 0, "`buffer` is null");
 
         isize state = CSV_STATE_BASE;
-
         isize count = 0;
         isize line  = 0;
 

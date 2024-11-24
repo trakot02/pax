@@ -7,7 +7,7 @@ using namespace pax;
 int
 main(int argc, char* argv[])
 {
-    auto slice = slice_init_arr<i32, 3>({0, 1, 2});
+    auto slice = slice_from_arr<i32, 3>({0, 1, 2});
 
     isize i = 0;
     isize j = slice.count - 1;

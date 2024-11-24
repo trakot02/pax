@@ -2,7 +2,7 @@
 #define PAX_CORE_BASE_ALLOC_HPP
 
 #include <pax_core/types.hpp>
-#include <pax_core/alloc.hpp>
+#include <pax_core/mem/alloc.hpp>
 
 namespace pax
 {
