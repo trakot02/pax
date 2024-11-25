@@ -10,6 +10,12 @@ namespace pax
         CSV_STATE_COUNT = 2,
     };
 
+    //
+    //
+    // Exposed.
+    //
+    //
+
     CSV_Match
     csv_match_empty()
     {

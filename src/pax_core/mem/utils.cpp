@@ -3,6 +3,12 @@
 
 namespace pax
 {
+    //
+    //
+    // Exposed.
+    //
+    //
+
     byte*
     align_forw(byte* block, isize align)
     {

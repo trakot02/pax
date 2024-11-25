@@ -2,9 +2,9 @@
 #define PAX_CORE_BUFF_HPP
 
 #include <pax_core/types.hpp>
+#include <pax_core/mem/alloc.hpp>
 #include <pax_core/write.hpp>
 #include <pax_core/read.hpp>
-#include <pax_core/mem/alloc.hpp>
 
 namespace pax
 {

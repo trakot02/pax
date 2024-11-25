@@ -110,13 +110,15 @@ namespace pax
     {
         pax_guard(self != 0, "`self` is null");
 
-        isize count = buff_count(self);
+        byte* tail = self->tail;
+        byte* pntr = self->head;
+        byte* dest = self->block;
 
-        for ( isize i = 0; i < count; i += 1 )
-            self->block[i] = self->head[i];
+        for ( ; pntr < tail; pntr += 1, dest += 1 )
+            *dest = *pntr;
 
         self->head = self->block;
-        self->tail = self->block + count;
+        self->tail = dest;
     }
 
     void
@@ -133,12 +135,13 @@ namespace pax
     {
         pax_guard(self != 0, "`self` is null");
 
-        isize avail = buff_avail(self);
+        byte* pntr = self->tail;
+        byte* tail = self->block + self->count;
 
-        for ( isize i = 0; i < avail; i += 1 )
-            self->tail[i] = value;
+        for ( ; pntr < tail; pntr += 1 )
+            *pntr = value;
 
-        self->tail += avail;
+        self->tail = pntr;
     }
 
     void
@@ -148,12 +151,13 @@ namespace pax
 
         if ( value == 0 ) return;
 
-        isize avail = buff_avail(self);
+        byte* pntr = self->tail;
+        byte* tail = self->block + self->count;
 
-        for ( isize i = 0; i < avail; i += 1 )
-            self->tail[i] = value[i];
+        for ( ; pntr < tail; pntr += 1, value += 1 )
+            *pntr = *value;
 
-        self->tail += avail;
+        self->tail = pntr;
     }
 
     void
@@ -202,39 +206,46 @@ namespace pax
     {
         pax_guard(self != 0, "`self` is null");
 
-        isize avail = buff_avail(self);
-        isize count = value.count;
+        byte* dest = self->tail;
+        byte* tail = self->block + self->count;
 
-        if ( count > avail )
+        const byte* pntr = value.block;
+
+        if ( dest + value.count >= tail )
             return {0, WRITE_ERROR_OVERFLOW};
 
-        for ( isize i = 0; i < count; i += 1 )
-            self->tail[i] = value[i];
+        for ( ; dest < tail; dest += 1, pntr += 1 )
+            *dest = *pntr;
 
-        self->tail += count;
+        self->tail = dest;
 
-        return {count, WRITE_ERROR_NONE};
+        return {value.count, WRITE_ERROR_NONE};
     }
 
     Write_Value
     buff_write_buff(Buff* self, Buff* value)
     {
-        pax_guard(self != 0, "`self` is null");
-        pax_guard(value  != 0, "`value` is null");
+        pax_guard(self  != 0, "`self` is null");
+        pax_guard(value != 0, "`value` is null");
 
-        isize avail = buff_avail(self);
         isize count = buff_count(value);
 
-        if ( count > avail )
-            return  {0, WRITE_ERROR_OVERFLOW};
+        byte* dest = self->tail;
+        byte* tail = self->block + self->count;
+        byte* pntr = value->head;
 
-        for ( isize i = 0; i < count; i += 1 )
-            self->tail[i] = value->head[i];
+        if ( dest + count >= tail )
+            return {0, WRITE_ERROR_OVERFLOW};
+
+        tail = self->block + count;
+
+        for ( ; dest < tail; dest += 1, pntr += 1 )
+            *dest = *pntr;
 
         value->tail = value->block;
         value->head = value->block;
 
-        self->tail += count;
+        self->tail = dest;
 
         return {count, WRITE_ERROR_NONE};
     }
@@ -259,16 +270,21 @@ namespace pax
     {
         pax_guard(self != 0, "`self` is null");
 
-        isize avail = buff_avail(value);
         isize count = buff_count(self);
 
-        if ( count > avail )
+        byte* dest = value->tail;
+        byte* tail = value->block + value->count;
+        byte* pntr = self->head;
+
+        if ( dest + count >= tail )
             return {0, READ_ERROR_OVERFLOW};
 
-        for ( isize i = 0; i < count; i += 1 )
-            value->tail[i] = self->head[i];
+        tail = value->block + count;
 
-        value->tail += count;
+        for ( ; dest < tail; dest += 1, pntr += 1 )
+            *dest = *pntr;
+
+        value->tail = dest;
 
         self->head = self->block;
         self->tail = self->block;

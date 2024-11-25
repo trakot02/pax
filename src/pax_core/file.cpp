@@ -2,6 +2,12 @@
 
 namespace pax
 {
+    //
+    //
+    // Exposed.
+    //
+    //
+
     Write
     stdout_write()
     {

@@ -7,7 +7,13 @@ main(int argc, char* argv[])
 {
     File file = file_empty();
 
-    auto error = file_create(&file, "src/prova.txt");
+    if ( argc < 2 ) {
+        pax_error("Unable to read file name");
+
+        return 1;
+    }
+
+    auto error = file_create(&file, argv[1]);
 
     if ( error != FILE_ERROR_NONE ) {
         pax_error("Unable to open file");

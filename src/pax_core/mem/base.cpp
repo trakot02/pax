@@ -20,28 +20,9 @@ namespace pax
     //
     //
 
-    Alloc
-    base_alloc()
-    {
-        auto alloc = alloc_empty();
-
-        alloc.func_request = &_base_request;
-        alloc.func_release = &_base_release;
-        alloc.func_clear   = &_base_clear;
-
-        return alloc;
-    }
-
-    //
-    //
-    // Not exposed.
-    //
-    //
-
     Alloc_Error
-    _base_request(void* self, Alloc_Value* value)
+    base_request(Alloc_Value* value)
     {
-        pax_guard(self  == 0, "`self` isn't null");
         pax_guard(value != 0, "`value` is null");
 
         isize width = value->width;
@@ -67,10 +48,8 @@ namespace pax
     }
 
     void
-    _base_release(void* self, Alloc_Value value)
+    base_release(Alloc_Value value)
     {
-        pax_guard(self == 0, "`self` isn't null");
-
         isize width = value.width;
         isize align = value.align;
         isize count = value.count;
@@ -92,8 +71,48 @@ namespace pax
     }
 
     void
+    base_clear()
+    {}
+
+    Alloc
+    base_alloc()
+    {
+        auto alloc = alloc_empty();
+
+        alloc.func_request = &_base_request;
+        alloc.func_release = &_base_release;
+        alloc.func_clear   = &_base_clear;
+
+        return alloc;
+    }
+
+    //
+    //
+    // Not exposed.
+    //
+    //
+
+    Alloc_Error
+    _base_request(void* self, Alloc_Value* value)
+    {
+        pax_guard(self == 0, "`self` isn't null");
+
+        return base_request(value);
+    }
+
+    void
+    _base_release(void* self, Alloc_Value value)
+    {
+        pax_guard(self == 0, "`self` isn't null");
+
+        base_release(value);
+    }
+
+    void
     _base_clear(void* self)
     {
         pax_guard(self == 0, "`self` isn't null");
+
+        base_clear();
     }
 } // namespace pax

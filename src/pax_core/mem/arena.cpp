@@ -4,15 +4,6 @@
 
 namespace pax
 {
-    Alloc_Error
-    _arena_request(void* self, Alloc_Value* value);
-
-    void
-    _arena_release(void* self, Alloc_Value value);
-
-    void
-    _arena_clear(void* self);
-
     struct Bump_Node {
         Bump_Node* next;
         Bump       bump;
@@ -21,16 +12,25 @@ namespace pax
     static const isize WIDTH_BUMP_NODE = pax_type_width(Bump_Node);
 
     Bump_Node
-    bump_node_empty();
+    _bump_node_empty();
 
     Bump_Node
-    bump_node_from(byte* block, isize count);
+    _bump_node_from(byte* block, isize count);
 
     Bump_Node*
-    arena_attach(Arena* self, Alloc_Value* value);
+    _arena_attach(Arena* self, Alloc_Value* value);
 
-    void 
-    arena_detach(Arena* self, Bump_Node* node);
+    void
+    _arena_detach(Arena* self, Bump_Node* node);
+
+    Alloc_Error
+    _arena_request(void* self, Alloc_Value* value);
+
+    void
+    _arena_release(void* self, Alloc_Value value);
+
+    void
+    _arena_clear(void* self);
 
     //
     //
@@ -52,7 +52,7 @@ namespace pax
     Arena
     arena_from(Alloc alloc)
     {
-        Arena arena;
+        auto arena = arena_empty();
 
         arena.alloc = alloc;
 
@@ -69,8 +69,8 @@ namespace pax
 
         for ( ; node != 0; node = temp ) {
             temp = node->next;
-            
-            arena_detach(self, node);
+
+            _arena_detach(self, node);
         }
 
         *self = arena_empty();
@@ -93,7 +93,7 @@ namespace pax
         if ( count <= 0 ) return ALLOC_ERROR_NONE;
 
         if ( self->list == 0 )
-            self->list = arena_attach(self, &copy);
+            self->list = _arena_attach(self, &copy);
 
         auto* node = self->list;
 
@@ -101,10 +101,10 @@ namespace pax
             if ( node == 0 )
                 return ALLOC_ERROR_OUT_OF_MEMORY;
 
-            auto error = bump_request(&node->bump, value);
+            bump_request(&node->bump, value);
 
             if ( value->block == 0 && node->next == 0 )
-                node->next = arena_attach(self, &copy);
+                node->next = _arena_attach(self, &copy);
 
             node = node->next;
         }
@@ -148,27 +148,9 @@ namespace pax
     // Not exposed.
     //
     //
- 
-    Alloc_Error
-    _arena_request(void* self, Alloc_Value* value)
-    {
-        return arena_request((Arena*) self, value);
-    }
-
-    void
-    _arena_release(void* self, Alloc_Value value)
-    {
-        return arena_release((Arena*) self, value);
-    }
-
-    void
-    _arena_clear(void* self)
-    {
-        return arena_clear((Arena*) self);
-    }
 
     Bump_Node
-    bump_node_empty()
+    _bump_node_empty()
     {
         Bump_Node node;
 
@@ -179,11 +161,11 @@ namespace pax
     }
 
     Bump_Node
-    bump_node_from(byte* block, isize count)
+    _bump_node_from(byte* block, isize count)
     {
         pax_guard(count >= 0, "`count` is negative");
 
-        auto node = bump_node_empty();
+        auto node = _bump_node_empty();
 
         node.bump = bump_from(block, count);
 
@@ -191,7 +173,7 @@ namespace pax
     }
 
     Bump_Node*
-    arena_attach(Arena* self, Alloc_Value* value)
+    _arena_attach(Arena* self, Alloc_Value* value)
     {
         pax_guard(self  != 0, "`self` is null");
         pax_guard(value != 0, "`value` is null");
@@ -215,14 +197,14 @@ namespace pax
             byte* block = value->block + delta;
             isize count = size - delta;
 
-            *node = bump_node_from(block, count);
+            *node = _bump_node_from(block, count);
         }
 
         return node;
     }
 
-    void 
-    arena_detach(Arena* self, Bump_Node* node)
+    void
+    _arena_detach(Arena* self, Bump_Node* node)
     {
         pax_guard(self != 0, "`self` is null");
 
@@ -237,5 +219,23 @@ namespace pax
 
             alloc_release(self->alloc, value);
         }
+    }
+
+    Alloc_Error
+    _arena_request(void* self, Alloc_Value* value)
+    {
+        return arena_request((Arena*) self, value);
+    }
+
+    void
+    _arena_release(void* self, Alloc_Value value)
+    {
+        return arena_release((Arena*) self, value);
+    }
+
+    void
+    _arena_clear(void* self)
+    {
+        return arena_clear((Arena*) self);
     }
 } // namespace pax

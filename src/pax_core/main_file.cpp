@@ -4,17 +4,15 @@
 
 using namespace pax;
 
-static Arena arena = arena_from(base_alloc());
-
 void
-csv_read_header(void* self, Str8 token, isize col)
+csv_parse_header(void* self, Str8 token, isize col)
 {
     printf("{%3i} => %.*s\n", (int) col,
         (int) token.count, token.block);
 }
 
 void
-csv_read_column(void* self, Str8 token, isize col, isize row)
+csv_parse_column(void* self, Str8 token, isize col, isize row)
 {
     switch ( col ) {
         case 0:
@@ -44,6 +42,9 @@ csv_read_column(void* self, Str8 token, isize col, isize row)
 int
 main(int argc, char* argv[])
 {
+    Arena arena = arena_from(base_alloc());
+    Alloc alloc = arena_alloc(&arena);
+
     Buff buff = buff_empty();
     File file = file_empty();
 
@@ -53,15 +54,15 @@ main(int argc, char* argv[])
         return 1;
     }
 
-    auto alloc = buff_init(&buff, arena_alloc(&arena), 8192);
+    auto init = buff_init(&buff, alloc, 8192);
 
-    if ( alloc != ALLOC_ERROR_NONE ) {
-        pax_error(ALLOC_ERROR_TITLE[alloc]);
+    if ( init != ALLOC_ERROR_NONE ) {
+        pax_error(ALLOC_ERROR_TITLE[init]);
 
         return 1;
     }
 
-    printf("buffer size = %li\n", buff.count);
+    printf("buffer size = %i\n", (int) buff.count);
 
     auto open = file_open(&file, argv[1]);
 
@@ -74,12 +75,12 @@ main(int argc, char* argv[])
         return 1;
     }
 
-    CSV_Parse parse;
+    auto parse = csv_parse_empty();
 
-    parse.func_header = &csv_read_header;
-    parse.func_column = &csv_read_column;
+    parse.func_header = &csv_parse_header;
+    parse.func_column = &csv_parse_column;
 
-    auto error = csv_parse(parse, &buff, &file, CSV_HEADER_TRUE);
+    auto error = csv_read(parse, &file, &buff, CSV_HEADER_TRUE);
 
     if ( error != READ_ERROR_NONE ) {
         pax_error("Unable to read from file");
